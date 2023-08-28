@@ -28,9 +28,6 @@ import com.robypomper.build.gradle.GradleBuildInfo
  * Components list:
  * <ul>
  *     <li>
- *         JOSP JOD
- *     </li>
- *     <li>
  *         JOSP JSL
  *     </li>
  * </ul>
@@ -64,41 +61,20 @@ import com.robypomper.build.gradle.GradleBuildInfo
 // ------------------
 
 sourceSets {
-
-    // JOSP JOD
-    jospJOD {}
-
-    // JOSP JSL
     jospJSL {}
-
 }
 
 configurations {}
 
 dependencies {
-
-    // JOSP JOD
-    jospJODImplementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
-    jospJODImplementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
-    jospJODImplementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
-    jospJODImplementation "net.sourceforge.htmlcleaner:htmlcleaner:${project.ext.get("version.htmlcleaner")}"
-    jospJODImplementation "com.jayway.jsonpath:json-path:${project.ext.get("version.json-path")}"
-    jospJODRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${project.ext.get("version.apache.log4j")}"
-    jospJODRuntimeOnly "org.apache.logging.log4j:log4j-api:${project.ext.get("version.apache.log4j")}"
-    jospJODRuntimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
-
-
-    // JOSP JSL
     jospJSLImplementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     jospJSLImplementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     jospJSLImplementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
     jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${project.ext.get("version.apache.log4j")}"
     jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-api:${project.ext.get("version.apache.log4j")}"
     jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
-
 }
 
-GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jospJOD, (String)project.ext.get("version.build.jospJOD"));
 GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jospJSL, (String)project.ext.get("version.build.jospJSL"));
 
 // -------------
@@ -106,54 +82,6 @@ GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jospJSL, (String)p
 // -------------
 
 // Utils: Make Java Runnable
-def makeJODJavaRunnable(String runnableName, String config_yml, String struct_jod, String perms_jod) {
-    makeJODJavaRunnable(runnableName, false, config_yml, struct_jod, perms_jod, null, true)
-}
-def makeJODJavaRunnable(String runnableName, String config_yml, String struct_jod, String perms_jod, String group_name) {
-    makeJODJavaRunnable(runnableName, false, config_yml, struct_jod, perms_jod, group_name, true)
-}
-def makeJODJavaRunnable(String runnableName, String config_yml, String struct_jod, String perms_jod, boolean overrideIfExist) {
-    makeJODJavaRunnable(runnableName, false, config_yml, struct_jod, perms_jod, null, overrideIfExist)
-}
-def makeJODJavaDaemon(String runnableName, String config_yml, String struct_jod, String perms_jod, boolean overrideIfExist) {
-    makeJODJavaRunnable(runnableName, true, config_yml, struct_jod, perms_jod, null, overrideIfExist)
-}
-def makeJODJavaRunnable(String runnableName, String config_yml, String struct_jod, String perms_jod, String group_name, boolean overrideIfExist) {
-    makeJODJavaRunnable(runnableName, false, config_yml, struct_jod, perms_jod, null, overrideIfExist)
-}
-def makeJODJavaRunnable(String runnableName, boolean isDaemon, String config_yml, String struct_jod, String perms_jod, String group_name, boolean overrideIfExist) {
-    runnableName = "JOD${runnableName}" + (isDaemon ? "Daemon" : "")
-    String mainClass = isDaemon ? 'com.robypomper.josp.jod.JODDaemon' : 'com.robypomper.josp.jod.JODShell'
-    String dir = isDaemon ? "jod-daemon" : "jod"
-    File workingDir = file("envs/runnables/${dir}/${runnableName}")
-
-    JavaRunnableUtils.makeJavaFromSourceSet(project, sourceSets.jospJOD, mainClass, runnableName, workingDir)
-    String jarTaskName = "java${runnableName}Run"
-
-    tasks.getByName(jarTaskName) {
-        group = group_name==null ? 'JOSP runners jod' : "JOSP runners jod ($group_name)"
-        standardInput = System.in
-        //args = ['--configs', 'src/jospJOD/configs/jod_dev.yml']
-        //jvmArgs = ['-Djavax.net.debug=ssl']
-        jvmArgs = ['-Dlog4j.configurationFile=' + project.file('src/jospJOD/resources/log4j2_project.xml').absolutePath]
-
-        doFirst {
-            if (workingDir.exists() && overrideIfExist)
-                delete workingDir
-
-            if (!workingDir.exists())
-                copy {
-                    from "src/jospJOD/configs/${config_yml}"
-                    from "src/jospJOD/configs/${struct_jod}"
-                    from "src/jospJOD/configs/${perms_jod}"
-                    rename 'jod(.+).yml', 'jod.yml'
-                    rename 'struct(.+).jod', 'struct.jod'
-                    rename 'perms(.+).jod', 'perms.jod'
-                    into "$workingDir/configs"
-                }
-        }
-    }
-}
 def makeJSLJavaRunnable(String runnableName, String config_yml) {
     makeJSLJavaRunnable(runnableName, config_yml, null, true)
 }
@@ -176,7 +104,7 @@ def makeJSLJavaRunnable(String runnableName, String config_yml, String group_nam
         standardInput = System.in
         //args = ['--configs', 'src/jospJSL/configs/jsl_dev.yml']
         //jvmArgs = ['-Djavax.net.debug=ssl']
-        jvmArgs = ['-Dlog4j.configurationFile=' + project.file('src/jospJSL/resources/log4j2_project.xml').absolutePath]
+        jvmArgs = ['-Dlog4j.configurationFile=' + project.file('src/jospJSL/configs/log4j2/log4j2.xml').absolutePath]
 
         doFirst {
             if (workingDir.exists() && overrideIfExist)
@@ -192,26 +120,6 @@ def makeJSLJavaRunnable(String runnableName, String config_yml, String group_nam
     }
 }
 
-// JOSP JOD
-makeJODJavaRunnable('','jod_default.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaRunnable('OnlyLocal','jod_only-local.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaRunnable('OnlyCloud','jod_only-cloud.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaRunnable('NoComm','jod_no-comm.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaRunnable('Vanilla','jod_default.yml','struct_default.jod','perms_default.jod')
-makeJODJavaRunnable('VanillaOnlyLocal','jod_only-local.yml','struct_default.jod','perms_default.jod')
-makeJODJavaRunnable('VanillaOnlyCloud','jod_only-cloud.yml','struct_default.jod','perms_default.jod')
-makeJODJavaRunnable('VanillaNoComm','jod_no-comm.yml','struct_default.jod','perms_default.jod')
-makeJODJavaDaemon('','jod_default.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaDaemon('OnlyLocal','jod_only-local.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaDaemon('OnlyCloud','jod_only-cloud.yml','struct_default.jod','perms_default.jod',false)
-makeJODJavaDaemon('NoComm','jod_no-comm.yml','struct_default.jod','perms_default.jod',false)
-task javaJOD_Clean(type: Delete) {
-    group 'JOSP cleaners'
-    delete "envs/runnables/jod/JOD"
-}
-clean.dependsOn javaJOD_Clean
-
-// JOSP JSL
 makeJSLJavaRunnable('','jsl_default.yml',false)
 makeJSLJavaRunnable('OnlyLocal','jsl_only-local.yml',false)
 makeJSLJavaRunnable('OnlyCloud','jsl_only-cloud.yml',false)
@@ -231,27 +139,6 @@ clean.dependsOn javaJSL_Clean
 // Runners Configs Tasks
 // ---------------------
 
-// JOSP JOD
-/*
- * ObjId    =>  unset   local   cloud
- * Owner    =>  unset   set
- *
- * Configs (ObjId, OwnerId, Off/Online)
- */
-makeJODJavaRunnable('uuf','configs/jod_uuf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('uun','configs/jod_uun.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('usf','configs/jod_usf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('usn','configs/jod_usn.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('luf','configs/jod_luf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('lun','configs/jod_lun.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('lsf','configs/jod_lsf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('lsn','configs/jod_lsn.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('cuf','configs/jod_cuf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('cun','configs/jod_cun.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('csf','configs/jod_csf.yml','struct_default.jod','perms_default.jod','Configs')
-makeJODJavaRunnable('csn','configs/jod_csn.yml','struct_default.jod','perms_default.jod','Configs')
-
-// JOSP JSL
 /**
  * Usr    =>  unset   set   anonymous
  *            when set, check that set token is valid and not expired
@@ -268,19 +155,6 @@ makeJSLJavaRunnable('sn','configs/jsl_sn.yml','Configs')
 // Runners Discovery Tasks
 // -----------------------
 
-// JOSP JOD
-/*
- * ObjId    =>  unset   local   cloud
- * Owner    =>  unset   set
- *
- * Configs (ObjId, OwnerId, Off/Online)
- */
-makeJODJavaRunnable('Avahi','discovery/jod_avahi.yml','struct_default.jod','perms_default.jod','Discovery')
-makeJODJavaRunnable('DNSSD','discovery/jod_dnssd.yml','struct_default.jod','perms_default.jod','Discovery')
-makeJODJavaRunnable('JmDNS','discovery/jod_jmdns.yml','struct_default.jod','perms_default.jod','Discovery')
-makeJODJavaRunnable('JmmDNS','discovery/jod_jmmdns.yml','struct_default.jod','perms_default.jod','Discovery')
-
-// JOSP JSL
 /**
  * Usr    =>  unset   set   anonymous
  *            when set, check that set token is valid and not expired
@@ -297,21 +171,6 @@ makeJSLJavaRunnable('JmmDNS','discovery/jsl_jmmdns.yml','Discovery')
 // Publication configs
 // -------------------
 
-// JOSP JOD
-String jospJODName = 'JOSP Object Daemon'
-String jospJODArtifact = 'jospJOD'
-String jospJODVersion = project.ext.get("version.build.jospJOD")
-String jospJODDescription = "This is the JOSP JOD executable from John O.S. Project"
-def jospJODPubDesc = new JavaPublicationUtils.Descriptor(project,sourceSets.jospJOD,jospJODName,jospJODArtifact,jospJODVersion,jospJODDescription)
-        .setUrlsFromProject(project)
-        .setLicenceGPLv3()
-        .setExecutable()
-        .setArtifactOpens()
-        .setArtifactDistr()
-JavaPublicationUtils.generatePublication(project,jospJODPubDesc)
-tasks.jospJODDocs.enabled = !project.ext.get("disableDocs");
-
-// JOSP JSL
 String jospJSLName = 'JOSP Service Library'
 String jospJSLArtifact = 'jospJSL'
 String jospJSLVersion = project.ext.get("version.build.jospJSL")
@@ -329,20 +188,8 @@ tasks.jospJSLDocs.enabled = !project.ext.get("disableDocs");
 // Publication tasks
 // -----------------
 
-// JOSP JOD
-task jospJOD_PublishToLocal {
-    description = 'Publish JOSP JOD component to local repository...'
-    group = 'JOSP publishers (locals)'
-    dependsOn publishJospJODPublicationToMavenLocal
-    tasks.josp_PublishToLocal.dependsOn jospJOD_PublishToLocal
-    mustRunAfter jospCommons_PublishToLocal
-}
-
-// JOSP JSL
 task jospJSL_PublishToLocal {
     description = 'Publish JOSP JSL component to local repository...'
     group = 'JOSP publishers (locals)'
     dependsOn publishJospJSLPublicationToMavenLocal
-    tasks.josp_PublishToLocal.dependsOn jospJSL_PublishToLocal
-    mustRunAfter jospCommons_PublishToLocal
 }

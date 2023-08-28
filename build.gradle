@@ -18,10 +18,6 @@
  ******************************************************************************/
 
 plugins {
-    id 'com.avast.gradle.docker-compose' //version '0.10.9'
-    id 'org.springframework.boot' //version '2.2.4.RELEASE'                     version not required because specified in buildSrc/build.gradle
-    id 'io.spring.dependency-management' //version '1.0.9.RELEASE'              version not required because specified in buildSrc/build.gradle
-    id "com.github.node-gradle.node" // version "3.0.1"                         // for jcpFE Javascript resources only
     id 'java'
     id 'maven-publish'
     id 'signing'
@@ -54,15 +50,8 @@ repositories {
     mavenLocal()
 }
 
-apply from: 'gradle/spring_support.gradle'
-apply from: 'gradle/node_configs.gradle'
-
 apply from: 'gradle/build_publications_repo_PRE.gradle'
-apply from: 'gradle/build_commons.gradle'
-apply from: 'gradle/build_dockers.gradle'
 apply from: 'gradle/build_josp.gradle'
-apply from: 'gradle/build_jospcloud.gradle'
-apply from: 'gradle/build_josp_platform.gradle'
 apply from: 'gradle/build_tests.gradle'
 apply from: 'gradle/build_publications_repo_POST.gradle'
 
