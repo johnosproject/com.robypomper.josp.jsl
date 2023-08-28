@@ -1,0 +1,106 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+import com.robypomper.build.docker.DockerNetworkUtils
+import java.nio.file.Files
+
+/**
+ * Gradle configurations to manage docker artifacts for JOSP project.
+ *
+ * Summary:
+ * - Docker's Services configs
+ * - Runners Tasks
+ *
+ * This file configure and provide tasks to manage following dockers:
+ * - dbms: the local database manager system used by other local jcp's
+ *         microservice like the auth and the jcpAPIs.
+ * - auth: the authentication microservice used by jcpAPIs to check clients
+ *         credentials via OAuth2.
+ */
+
+
+// -------------------------
+// Docker's Services configs
+// -------------------------
+
+dockerCompose {
+    dbms {                                                                  // on localhost:8999
+        useComposeFiles = ['src/dockers/dbms/docker/docker-compose.yml']
+    }
+    auth {                                                                  // on localhost:8998
+        useComposeFiles = ['src/dockers/auth/docker/docker-compose.yml']
+    }
+}
+
+// Add docker's network dependency
+DockerNetworkUtils.setDockerNetworkDependency(project,dockerCompose.dbms,"jcp-dev")
+DockerNetworkUtils.setDockerNetworkDependency(project,dockerCompose.auth,"jcp-dev")
+
+
+// -------------
+// Runners Tasks
+// -------------
+
+// DBMS
+
+task dbms_Up {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (dockers)'
+    dependsOn dbmsComposeUp
+    dbmsComposeUp.doFirst {
+        println "Create'envs' dir..."
+        Files.createDirectories(project.file('envs/dockers').toPath())
+    }
+
+    doLast {
+        println "INF: 'envs/dockers/dbms''s dir was created with root as owner, exec following command to change dir's access"
+        println "# sudo chmod a+rw -R envs"
+    }
+}
+
+task dbms_Down {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (dockers)'
+    dependsOn dbmsComposeDown
+}
+
+task dbms_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete "envs/dockers/dbms"
+}
+
+// Auth
+
+task auth_Up {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (dockers)'
+    dependsOn authComposeUp
+}
+
+task auth_Down {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (dockers)'
+    dependsOn authComposeDown
+}
+
+task auth_Clean {
+    description = 'Runs...'
+    group = 'JOSP cleaners'
+    //...delete and recreate jcp_auth database in dbms
+}

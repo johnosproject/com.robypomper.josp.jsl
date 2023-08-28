@@ -1,0 +1,33 @@
+spring.application.name: jcpJSLWebBridge
+server.port: 9003
+spring.profiles.active: auth, data-none, ssl, cors, sessions
+
+# JCP Clients
+localhost.public: ${HOST:${HOSTNAME:localhost}}
+jcp.client.id: jcp-jsl-web-bridge
+jcp.client.secret: 7e27c5b9-2a6a-4b4e-b4a7-c8118b2b1083
+jcp.client.callback: https://${localhost.public}:${server.port}/apis/pub/jslwebbridge/core/user/2.0/login/code/
+jcp.client.ssl.private: true       #jcp.client.ssl.internal: true
+jcp.client.ssl.public: true
+jcp.client.auth.public: ${localhost.public}
+jcp.client.auth.port: 8998
+#jcp.client.apis.private: localhost
+jcp.client.apis.public: ${localhost.public}
+jcp.client.apis.port: 9001
+#jcp.client.jslWB.private: localhost
+#jcp.client.jslWB.public: ${localhost.public}
+#jcp.client.jslWB.port: 9003
+#jcp.client.fe.private: localhost
+#jcp.client.fe.public: ${localhost.public}
+#jcp.client.fe.port: 9004
+
+# JSL WB
+jcp.jsl.remove.delay: 900
+jcp.jsl.heartbeat.delay: 60
+
+# JSL Configs
+jsl.version: 2.0.0
+jcp.url.apis: ${jcp.client.apis.public}:${jcp.client.apis.port}
+jcp.url.auth: ${jcp.client.auth.public}:${jcp.client.auth.port}
+jsl.comm.local.enabled: false
+jsl.comm.local.discovery: DNSSD

@@ -1,0 +1,27 @@
+spring.application.name: jcpApis
+server.port: 9001
+#spring.profiles.active: auth, db-apis, ssl
+
+# JCP Clients
+localhost.public: ${HOST:${HOSTNAME:localhost}}
+jcp.client.id: jcp-apis
+jcp.client.secret: 6ac0c0d9-50db-407d-946c-3c63cd7b7d34
+#jcp.client.callback: n/a
+jcp.client.ssl.private: true
+jcp.client.ssl.public: true
+jcp.client.auth.public: ${localhost.public}
+jcp.client.auth.port: 8998
+jcp.client.apis.private: localhost
+jcp.client.apis.public: ${localhost.public}
+jcp.client.apis.port: 9001
+jcp.client.jslWB.private: localhost
+jcp.client.jslWB.public: ${localhost.public}
+jcp.client.jslWB.port: 9003
+jcp.client.fe.private: localhost
+jcp.client.fe.public: ${localhost.public}
+jcp.client.fe.port: 9004
+
+# JCP APIs (single instance - dev)
+jcp.apis.gws.cache.load_on_startup: true
+jcp.apis.gws.availability.delay_seconds: 10
+jcp.apis.gws.availability.attempts: 5

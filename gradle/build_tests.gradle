@@ -1,0 +1,257 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Gradle configurations to manage JOSP project's tests.
+ *
+ * Summary:
+ * - SourceSes configs
+ * - Tests Tasks
+ * - IntelliJ Modules
+ *
+ * This file configure and provide test tasks for all JOSP project's components:
+ * - JOSP Commons: communication tests
+ * - JOD: communication and structure tests
+ * - JSL: communication tests
+ *
+ * Component's test are organized by one sourceSets for each unit of the component
+ * (comm, struct, perms...) and this file provide specific and generic (All) tests
+ * tasks.
+ */
+
+
+// -----------------
+// SourceSes configs
+// -----------------
+
+sourceSets {
+
+    // Test's Commons
+
+    test_Commons {
+        java.srcDirs 'tests/test_Commons/java'
+        resources.srcDirs 'tests/test_Commons/resources'
+    }
+
+
+    // JOSP Commons
+
+    test_jospCommonsComm {
+        java.srcDirs 'tests/test_jospCommonsComm/java'
+        resources.srcDirs 'tests/test_jospCommonsComm/resources'
+    }
+
+    test_jospCommonsDisc {
+        java.srcDirs 'tests/test_jospCommonsDisc/java'
+        resources.srcDirs 'tests/test_jospCommonsDisc/resources'
+    }
+
+
+    // JOD
+
+    test_jospJODStruct {
+        java.srcDirs 'tests/test_jospJODStruct/java'
+        resources.srcDirs 'tests/test_jospJODStruct/resources'
+    }
+
+    test_jospJODComm {
+        java.srcDirs 'tests/test_jospJODComm/java'
+        resources.srcDirs 'tests/test_jospJODComm/resources'
+    }
+
+    test_jospJODExec {
+        java.srcDirs 'tests/test_jospJODExec/java'
+        resources.srcDirs 'tests/test_jospJODExec/resources'
+    }
+
+
+    // JSL
+
+    test_jospJSLComm {
+        java.srcDirs 'tests/test_jospJSLComm/java'
+        resources.srcDirs 'tests/test_jospJSLComm/resources'
+    }
+
+}
+
+dependencies {
+
+    // Test's commons
+    test_CommonsImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    test_CommonsRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+    test_CommonsImplementation sourceSets.jospCommons.output
+    test_CommonsImplementation sourceSets.jospCommons.runtimeClasspath
+    test_CommonsImplementation sourceSets.jospJOD.output
+    test_CommonsImplementation sourceSets.jospJOD.runtimeClasspath
+    test_CommonsImplementation sourceSets.jospJSL.output
+    test_CommonsImplementation sourceSets.jospJSL.runtimeClasspath
+
+    // JOSP Commons
+    test_jospCommonsCommImplementation sourceSets.test_Commons.output
+    test_jospCommonsCommImplementation sourceSets.test_Commons.runtimeClasspath
+    test_jospCommonsDiscImplementation sourceSets.test_Commons.output
+    test_jospCommonsDiscImplementation sourceSets.test_Commons.runtimeClasspath
+
+    // JOD
+    test_jospJODStructImplementation sourceSets.test_Commons.output
+    test_jospJODStructImplementation sourceSets.test_Commons.runtimeClasspath
+    test_jospJODCommImplementation sourceSets.test_Commons.output
+    test_jospJODCommImplementation sourceSets.test_Commons.runtimeClasspath
+    test_jospJODExecImplementation sourceSets.test_Commons.output
+    test_jospJODExecImplementation sourceSets.test_Commons.runtimeClasspath
+
+    // JSL
+    test_jospJSLCommImplementation sourceSets.test_Commons.output
+    test_jospJSLCommImplementation sourceSets.test_Commons.runtimeClasspath
+}
+
+
+// -----------
+// Tests Tasks
+// -----------
+
+// JOSP Commons
+
+task jospJOSPCommonsAllTest(type: Test) {
+    description = 'Runs all JOD tests.'
+    group = 'verification'
+}
+check.dependsOn jospJOSPCommonsAllTest
+
+task jospJOSPCommonsCommTest(type: Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospCommonsComm.output.classesDirs
+    classpath = sourceSets.test_jospCommonsComm.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJOSPCommonsAllTest.dependsOn jospJOSPCommonsCommTest
+
+task jospJOSPCommonsDiscTest(type: Test) {
+    description = 'Runs JOD Executors tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospCommonsDisc.output.classesDirs
+    classpath = sourceSets.test_jospCommonsDisc.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJOSPCommonsAllTest.dependsOn jospJOSPCommonsDiscTest
+
+
+// JOD
+
+task jospJODAllTest(type: Test) {
+    description = 'Runs all JOD tests.'
+    group = 'verification'
+}
+check.dependsOn jospJODAllTest
+
+task jospJODStructTest(type: Test) {
+    description = 'Runs JOD Communication tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospJODStruct.output.classesDirs
+    classpath = sourceSets.test_jospJODStruct.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJODAllTest.dependsOn jospJODStructTest
+
+task jospJODCommTest(type: Test) {
+    description = 'Runs JOD Communication tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospJODComm.output.classesDirs
+    classpath = sourceSets.test_jospJODComm.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJODAllTest.dependsOn jospJODCommTest
+
+task jospJODExecTest(type: Test) {
+    description = 'Runs JOD Executors tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospJODExec.output.classesDirs
+    classpath = sourceSets.test_jospJODExec.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJODAllTest.dependsOn jospJODExecTest
+
+
+// JSL
+
+task jospJSLAllTest(type: Test) {
+    description = 'Runs all JSL tests.'
+    group = 'verification'
+}
+check.dependsOn jospJSLAllTest
+
+task jospJSLCommTest(type: Test) {
+    description = 'Runs JSL Communication tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.test_jospJSLComm.output.classesDirs
+    classpath = sourceSets.test_jospJSLComm.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+    //jvmArgs '-Djavax.net.debug=all'
+}
+jospJSLAllTest.dependsOn jospJSLCommTest
+
+
+// ----------------
+// IntelliJ Modules
+// ----------------
+
+// gradle > intellij settings
+idea {
+    module {
+        // Test's commons
+//        testSourceDirs += project.sourceSets.test_Commons.java.srcDirs
+//        testSourceDirs += project.sourceSets.test_Commons.resources.srcDirs
+
+        // JOSP Commons
+        testSourceDirs += project.sourceSets.test_jospCommonsComm.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospCommonsComm.resources.srcDirs
+        testSourceDirs += project.sourceSets.test_jospCommonsDisc.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospCommonsDisc.resources.srcDirs
+
+        // JOD
+        testSourceDirs += project.sourceSets.test_jospJODStruct.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJODStruct.resources.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJODComm.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJODComm.resources.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJODExec.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJODExec.resources.srcDirs
+
+        // JSL
+        testSourceDirs += project.sourceSets.test_jospJSLComm.java.srcDirs
+        testSourceDirs += project.sourceSets.test_jospJSLComm.resources.srcDirs
+    }
+}

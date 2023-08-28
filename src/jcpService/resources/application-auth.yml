@@ -1,0 +1,16 @@
+oauth2.resource.public-paths: /**
+
+localhost.public: ${HOST:${HOSTNAME:localhost}}
+oauth2.url: https://${localhost.public}:8998
+oauth2.realm: jcp
+oauth2.resource: jcpAPIs
+
+oauth2.url_full: ${oauth2.url}/auth/realms/${oauth2.realm}
+spring.security.oauth2.resourceserver.jwt.issuer-uri: ${oauth2.url_full}
+keycloak.realm: ${oauth2.realm}
+keycloak.resource: ${oauth2.resource}
+keycloak.auth-server-url: ${oauth2.url}/auth
+keycloak.ssl-required: external
+keycloak.public-client: false
+keycloak.principal-attribute: preferred_username
+keycloak.disable-trust-manager: true

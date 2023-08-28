@@ -1,0 +1,22 @@
+John Service Library versions:   2.2.3-DEV-202210080745
++-----------------
+| Current dir:     /home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp/envs/runnables/jsl/JSL
++-----------------
+| Java Version:    1.8(1.8.0_342)
+| Java VM Version: 1.8
+| Java Runtime:    OpenJDK Runtime Environment
+| Java Home:       /usr/lib/jvm/java-8-openjdk-amd64/jre
+| Java Home (ENV): null
+| Java Vendor:     Private Build
+| Java Libs Path:  /usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+| Java ClassPath:  /home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp/build/classes/java/jospJSL:/home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp/build/resources/jospJSL:/home/robypomper/.m2/repository/com/robypomper/josp/jospCommons/2.2.3-DEV/jospCommons-2.2.3-DEV.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/commons-cli/commons-cli/1.4/c51c00206bb913cd8612b24abd9fa98ae89719b1/commons-cli-1.4.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.googlecode.clichemaven/cliche/110413/6b857d46798400f1f19f5fe7c4f6de4c5d16ede0/cliche-110413.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-slf4j-impl/2.13.1/79e92fe5b6c30cc4c8a52893378d4d130e298c65/log4j-slf4j-impl-2.13.1.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.13.1/533f6ae0bb0ce091493f2eeab0c1df4327e46ef1/log4j-core-2.13.1.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.13.1/cc670f92dc77bbf4540904c3fa211b997cba00d8/log4j-api-2.13.1.jar:/home/robypomper/.m2/repository/com/robypomper/josp/jospAPIs/2.2.3-DEV/jospAPIs-2.2.3-DEV.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.25/8b6e01ef661d8378ae6dd7b511a7f2a33fae1421/snakeyaml-1.25.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.github.scribejava/scribejava-apis/6.9.0/a374c7a36533e58e53b42b584a8b3751ab1e13c4/scribejava-apis-6.9.0.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.github.scribejava/scribejava-core/6.9.0/ed761f450d8382f75787e8fee9ae52e7ec768747/scribejava-core-6.9.0.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.jmdns/jmdns/3.5.5/a156f2da3a29df61e2cab6f4d47c22f42114e2d/jmdns-3.5.5.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.30/b5a4b6d16ab13e34a88fae84c35cd5d68cac922c/slf4j-api-1.7.30.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.10.5.1/7ff756c3af1fe95cb3cddba9158fc3289ca06387/jackson-databind-2.10.5.1.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.10.5/33298de8da86f92f8ccd61ced214d3b16f8c531e/jackson-annotations-2.10.5.jar:/home/robypomper/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.10.5/db2ba27938de7f2d478a97d6abcdaa17cbbd3cea/jackson-core-2.10.5.jar
++-----------------
+| OS Name:         Linux
+| OS Version:      5.15.0-47-generic
+| Current user:    robypomper
+| Dflt language:   en
+| Dflt encoding:   UTF-8
+| File encoding:   UTF-8
++-----------------
+| Working dir:     /home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp/envs/runnables/jsl/JSL
++-----------------

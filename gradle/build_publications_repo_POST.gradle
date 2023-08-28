@@ -1,0 +1,236 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Configuration for remote publication of JOSP Components.
+ *
+ * Those configs are active when enablePrivate build config is true.
+ *
+ * JOSP Components can be also published remotely. Depending on
+ * jospMode it can be published to the stage or to the release
+ * repository.
+ *
+ * For each publication it add the signing task and configure destination
+ * repository.
+ *
+ * <h2>Private configs</h2>
+ * To work properly this Gradle file require following configs on
+ * $USER/.gradle/gradle.properties file:
+ * <ul>
+ *     <li>sonatypeUser={jira_username}</li>
+ *     <li>sonatypePassword={jira_password}</li>
+ *     <li>signing.keyId={last 8-digit of the GPG key}</li>
+ *     <li>signing.password={passphrase of the GPG key}</li>
+ *     <li>signing.secretKeyRingFile={file containing the GPG key}</li>
+ * </ul>
+ */
+
+def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE') ? releasesRepoUrl : snapshotsRepoUrl
+
+
+// -------------------
+// Publication configs
+// -------------------
+
+if (ext.get('enablePrivate')) {
+    publishing {
+
+        publications.each { pub ->
+            signing {
+                sign pub
+            }
+        }
+
+        repositories {
+            maven {
+                url = uri(repoUrl)
+                credentials {
+                    username project.sonatypeUser
+                    password project.sonatypePassword
+                }
+            }
+        }
+    }
+
+}   // if (ext.get(enablePrivate))
+
+
+// -----------------
+// Publication tasks
+// -----------------
+
+if (ext.get('enablePrivate')) {
+
+    // ALL
+    task all_PublishToRemote {
+        description = 'Publish all JOSP and JCP components to remote repository...'
+        group = 'JOSP publishers (remote)'
+    }
+
+    // ALL JOSP
+    task josp_PublishToRemote {
+        description = 'Publish only JOSP components to remote repository...'
+        group = 'JOSP publishers (remote)'
+        tasks.all_PublishToRemote.dependsOn josp_PublishToRemote
+    }
+
+    // JOSP APIs
+    task jospAPIs_PublishToRemote {
+        description = 'Publish JOSP APIs component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJospAPIsPublicationToMavenRepository
+        tasks.josp_PublishToRemote.dependsOn jospAPIs_PublishToRemote
+    }
+
+    // JOSP Commons
+    task jospCommons_PublishToRemote {
+        description = 'Publish JOSP Commons component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJospCommonsPublicationToMavenRepository
+        tasks.josp_PublishToRemote.dependsOn jospCommons_PublishToRemote
+        mustRunAfter jospAPIs_PublishToRemote
+    }
+
+
+    // JOSP JOD
+    task jospJOD_PublishToRemote {
+        description = 'Publish JOSP JOD component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJospJODPublicationToMavenRepository
+        tasks.josp_PublishToRemote.dependsOn jospJOD_PublishToRemote
+        mustRunAfter jospCommons_PublishToRemote
+    }
+
+    // JOSP JSL
+    task jospJSL_PublishToRemote {
+        description = 'Publish JOSP JSL component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJospJSLPublicationToMavenRepository
+        tasks.josp_PublishToRemote.dependsOn jospJSL_PublishToRemote
+        mustRunAfter jospCommons_PublishToRemote
+    }
+
+
+    // All JCP
+    task jcp_PublishToRemote {
+        description = 'Publish all JCP components to remote repository...'
+        group = 'JOSP publishers (remote)'
+        tasks.all_PublishToRemote.dependsOn jcp_PublishToRemote
+    }
+
+    // JCP Commons
+    task jcpCommons_PublishToRemote {
+        description = 'Publish JCP Commons component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpCommonsPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpCommons_PublishToRemote
+        mustRunAfter jospCommons_PublishToRemote
+        mustRunAfter jospJSL_PublishToRemote
+    }
+
+    // JCP DB
+    task jcpDB_PublishToRemote {
+        description = 'Publish JCP DB component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpDBPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpDB_PublishToRemote
+        mustRunAfter jcpCommons_PublishToRemote
+    }
+
+    // JCP DB APIs
+    task jcpDBAPIs_PublishToRemote {
+        description = 'Publish JCP DB APIs component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpDBAPIsPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpDBAPIs_PublishToRemote
+        mustRunAfter jcpDB_PublishToRemote
+    }
+
+    // JCP DB FE
+    task jcpDBFE_PublishToRemote {
+        description = 'Publish JCP DB FE component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpDBFEPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpDBFE_PublishToRemote
+        mustRunAfter jcpDB_PublishToRemote
+    }
+
+    // JCP Service
+    task jcpService_PublishToRemote {
+        description = 'Publish JCP Service component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpServicePublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpService_PublishToRemote
+        mustRunAfter jcpCommons_PublishToRemote
+    }
+
+    // JCP APIs
+    task jcpAPIs_PublishToRemote {
+        description = 'Publish JCP APIs component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpAPIsPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpAPIs_PublishToRemote
+        mustRunAfter jcpService_PublishToRemote
+        mustRunAfter jcpDBAPIs_PublishToRemote
+    }
+
+    // JCP GWs
+    task jcpGWs_PublishToRemote {
+        description = 'Publish JCP GWs component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpGWsPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpGWs_PublishToRemote
+        mustRunAfter jcpService_PublishToRemote
+        mustRunAfter jcpDBAPIs_PublishToRemote
+    }
+
+    // JCP JSL Web Bridge
+    task jcpJSLWebBridge_PublishToRemote {
+        description = 'Publish JCP JSL Web Bridge component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpJSLWebBridgePublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpJSLWebBridge_PublishToRemote
+        mustRunAfter jcpService_PublishToRemote
+    }
+
+    // JCP FE
+    task jcpFE_PublishToRemote {
+        description = 'Publish JCP Front End component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpFEPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpFE_PublishToRemote
+        mustRunAfter jcpService_PublishToRemote
+        mustRunAfter jcpDBFE_PublishToRemote
+    }
+
+    // JCP All
+    task jcpAll_PublishToRemote {
+        description = 'Publish JCP All component to remote repository...'
+        group = 'JOSP publishers (remote)'
+        dependsOn publishJcpAllPublicationToMavenRepository
+        tasks.jcp_PublishToRemote.dependsOn jcpAll_PublishToRemote
+        mustRunAfter jcpAPIs_PublishToRemote
+        mustRunAfter jcpGWs_PublishToRemote
+        mustRunAfter jcpJSLWebBridge_PublishToRemote
+        mustRunAfter jcpFE_PublishToRemote
+    }
+
+}   // if (ext.get(enablePrivate))

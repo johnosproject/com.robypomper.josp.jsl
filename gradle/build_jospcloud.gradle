@@ -1,0 +1,636 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+
+import com.robypomper.build.gradle.GradleBuildInfo
+import com.robypomper.build.gradle.GradleUtils.PrintGradleVersion
+import com.robypomper.build.java.JavaPublicationUtils
+import com.robypomper.build.spring.SpringBuildUtils
+import com.robypomper.build.node.NodeBuildUtils
+
+/**
+ * Gradle configurations to manage JCP components.
+ *
+ * Components list:
+ * <ul>
+ *     <li>
+ *         JCP Commons
+ *     </li>
+ *     <li>
+ *         JCP DB
+ *     </li>
+ *     <li>
+ *         JCP DB APIs
+ *     </li>
+ *     <li>
+ *         JCP DB FE
+ *     </li>
+ *     <li>
+ *         JCP APIs
+ *     </li>
+ *     <li>
+ *         JCP GWs
+ *     </li>
+ *     <li>
+ *         JCP JSL Web Bridge
+ *     </li>
+ *     <li>
+ *         JCP FE
+ *     </li>
+ *     <li>
+ *         JCP All
+ *     </li>
+ * </ul>
+ *
+ * Summary:
+ * <ul>
+ *     <li>
+ *         Components configs: sourceSets, configurations, dependencies and BuildInfo
+ *     </li>
+ *     <li>
+ *         Runners Tasks: task to run components as java spring application
+ *     </li>
+ *     <li>
+ *         Publication configs: component's publications
+ *     </li>
+ *     <li>
+ *         Publication tasks: publication's tasks to local repository
+ *     </li>
+ * </ul>
+ */
+
+
+// ------------------
+// Components configs
+// ------------------
+
+sourceSets {
+
+    // JCP Commons
+    jcpCommons {}
+
+    // JCP DB
+    jcpDB {}
+
+    // JCP DB APIs
+    jcpDBAPIs {}
+
+    // JCP DB FE
+    jcpDBFE {}
+
+    // JCP Service
+    jcpService {}
+
+    // JCP APIs
+    jcpAPIs {}
+
+    // JCP GWs
+    jcpGWs {}
+
+    // JCP JSL Web Bridge
+    jcpJSLWebBridge {}
+
+    // JCP FE
+    jcpFE {
+        resources {
+             srcDir 'build/generated/resources/node/jcpFE'
+        }
+    }
+
+    // JCP All
+    jcpAll {}
+
+}
+
+configurations {
+
+    jcpServiceImplementation.exclude module: 'spring-boot-starter-logging'
+    jcpAPIsImplementation.exclude module: 'spring-boot-starter-logging'
+    jcpGWsImplementation.exclude module: 'spring-boot-starter-logging'
+    jcpJSLWebBridgeImplementation.exclude module: 'spring-boot-starter-logging'
+    jcpFEImplementation.exclude module: 'spring-boot-starter-logging'
+    jcpAllImplementation.exclude module: 'spring-boot-starter-logging'
+
+    jcpDBAPIsCompileOnly.extendsFrom jcpDBCompileOnly
+    jcpDBAPIsAnnotationProcessor.extendsFrom jcpDBAnnotationProcessor
+    jcpDBFECompileOnly.extendsFrom jcpDBCompileOnly
+    jcpDBFEAnnotationProcessor.extendsFrom jcpDBAnnotationProcessor
+}
+
+dependencies {
+    def excludeSwagger = {
+        exclude group: 'io.swagger', module: 'swagger-annotations'
+        exclude group: 'io.swagger', module: 'swagger-models'
+    }
+
+    // JCP Commons
+    jcpCommonsImplementation "com.robypomper.josp:jospJSL:${project.ext.get("version.deps.jospJSL")}"
+    jcpCommonsImplementation "org.apache.tomcat.embed:tomcat-embed-core:${project.ext.get("version.tomcat")}"
+    jcpCommonsImplementation "org.springframework:spring-context"
+    // Spring Boot Context (required by JCP's clients)
+    jcpCommonsImplementation "org.springframework:spring-beans"
+    // Spring Boot Beans (required by JCP's clients)
+    jcpCommonsImplementation "org.springframework:spring-web"
+
+    // JCP DB
+    jcpDBImplementation "com.robypomper.josp:jcpCommons:${project.ext.get("version.deps.jcpCommons")}"
+    jcpDBImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Spring Boot Data
+    jcpDBImplementation 'mysql:mysql-connector-java'
+    // MySQL
+    jcpDBCompileOnly "org.projectlombok:lombok:${project.ext.get("version.lombok")}"
+    // Lombok annotations
+    jcpDBAnnotationProcessor "org.projectlombok:lombok:${project.ext.get("version.lombok")}"
+
+    // JCP DB APIs
+    jcpDBAPIsImplementation "com.robypomper.josp:jcpDB:${project.ext.get("version.deps.jcpDB")}"
+
+    // JCP DB FE
+    jcpDBFEImplementation "com.robypomper.josp:jcpDB:${project.ext.get("version.deps.jcpDB")}"
+
+    // JCP Service
+    jcpServiceImplementation "com.robypomper.josp:jcpCommons:${project.ext.get("version.deps.jcpCommons")}"
+    jcpServiceImplementation 'org.springframework.boot:spring-boot-starter-web'
+    // Spring Boot Web
+    jcpServiceCompileOnly 'org.springframework.boot:spring-boot-devtools'
+    // Spring Boot DevTools
+    jcpServiceImplementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    // Spring Boot Logger
+    jcpServiceImplementation 'org.springframework.boot:spring-boot-starter-security'
+    // Spring Boot SSL support
+    jcpServiceImplementation 'org.springframework.security:spring-security-oauth2-client'
+    // Spring Boot OAuth (Client)
+    jcpServiceImplementation 'org.springframework.security:spring-security-oauth2-resource-server'
+    // Spring Boot OAuth (Resource Server)
+    jcpServiceImplementation 'org.springframework.security:spring-security-oauth2-jose'
+    // Spring Boot OAuth (JSON messages)
+    jcpServiceImplementation 'org.keycloak:keycloak-spring-boot-starter'
+    // Keycloak 4 Spring Boot
+    jcpServiceImplementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:${project.ext.get("version.jackson")}"
+    // Jackson 4 Hibernate5jcpAPIsImplementation "io.springfox:springfox-swagger2:${project.ext.get("version.swaggerSpring")}", excludeSwagger // Swagger support
+    jcpServiceImplementation "io.springfox:springfox-swagger2:${project.ext.get("version.swaggerSpring")}", excludeSwagger
+    // Swagger 4 Spring Boot
+    jcpServiceImplementation "io.springfox:springfox-swagger-ui:${project.ext.get("version.swaggerSpring")}", excludeSwagger
+    // Swagger 4 Spring Boot
+    jcpServiceImplementation "io.swagger:swagger-models:${project.ext.get("version.swagger")}"
+    // Swagger Model
+    jcpServiceImplementation "io.swagger:swagger-annotations:${project.ext.get("version.swagger")}"
+    // Swagger Annotations
+    jcpServiceCompileOnly "org.projectlombok:lombok:${project.ext.get("version.lombok")}"
+    // Lombok annotations for Swagger docs
+    jcpServiceAnnotationProcessor "org.projectlombok:lombok:${project.ext.get("version.lombok")}"
+    jcpServiceImplementation "jakarta.persistence:jakarta.persistence-api:${project.ext.get("version.jakarta")}"
+    // Swagger Annotations
+    jcpServiceImplementation "org.hibernate:hibernate-core:${project.ext.get("version.hibernate")}"
+    // Swagger Annotations
+
+    // JCP APIs
+    jcpAPIsImplementation "com.robypomper.josp:jcpService:${project.ext.get("version.deps.jcpService")}"
+    jcpAPIsImplementation "com.robypomper.josp:jcpDBAPIs:${project.ext.get("version.deps.jcpDBAPIs")}"
+
+    // JCP GWs
+    jcpGWsImplementation "com.robypomper.josp:jcpService:${project.ext.get("version.deps.jcpService")}"
+    jcpGWsImplementation "com.robypomper.josp:jcpDBAPIs:${project.ext.get("version.deps.jcpDBAPIs")}"
+
+    // JCP JSL Web Bridge
+    jcpJSLWebBridgeImplementation "com.robypomper.josp:jcpService:${project.ext.get("version.deps.jcpService")}"
+
+    // JCP FE
+    jcpFEImplementation "com.robypomper.josp:jcpService:${project.ext.get("version.deps.jcpService")}"
+    jcpFEImplementation "com.robypomper.josp:jcpDBFE:${project.ext.get("version.deps.jcpDBFE")}"
+
+    // JCP All
+    jcpAllImplementation "com.robypomper.josp:jcpAPIs:${project.ext.get("version.deps.jcpAPIs")}"
+    jcpAllImplementation "com.robypomper.josp:jcpGWs:${project.ext.get("version.deps.jcpGWs")}"
+    jcpAllImplementation "com.robypomper.josp:jcpJSLWebBridge:${project.ext.get("version.deps.jcpJSLWebBridge")}"
+    jcpAllImplementation "com.robypomper.josp:jcpFE:${project.ext.get("version.deps.jcpFE")}"
+
+}
+
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpCommons, (String) project.ext.get("version.build.jcpCommons"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpDB, (String) project.ext.get("version.build.jcpDB"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpDBAPIs, (String) project.ext.get("version.build.jcpDBAPIs"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpDBFE, (String) project.ext.get("version.build.jcpDBFE"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpService, (String) project.ext.get("version.build.jcpService"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpAPIs, (String) project.ext.get("version.build.jcpAPIs"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpGWs, (String) project.ext.get("version.build.jcpGWs"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpJSLWebBridge, (String) project.ext.get("version.build.jcpJSLWebBridge"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpFE, (String) project.ext.get("version.build.jcpFE"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jcpAll, (String) project.ext.get("version.build.jcpAll"))
+
+
+// -------------
+// Runners Tasks
+// -------------
+
+def springEnvs = [HOSTNAME: "localhost", DISABLE_SSL_CHECKS: "localhost"]
+
+// Utils
+task printGradleVersions(type: PrintGradleVersion)
+
+// JCP APIs
+SpringBuildUtils.makeSpringBootFromSourceSet(project, sourceSets.jcpAPIs, project.file('src/jcpAPIs/resources/log4j2_project.xml'), 'dev,spring,auth,db-apis,ssl,jcp-apis', springEnvs)
+tasks.bootJcpAPIsRun {
+    workingDir('envs/runnables/jcpAPIs')
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+task jcpAPIs_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn bootJcpAPIsRun
+}
+task jcpAPIs_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete "envs/runnables/jcpAPIs"
+
+    //...delete and recreate jcp_api database in dbms
+}
+clean.dependsOn jcpAPIs_Clean
+bootJcpAPIsRun.dependsOn printGradleVersions
+
+// JCP GWs
+SpringBuildUtils.makeSpringBootFromSourceSet(project, sourceSets.jcpGWs, project.file('src/jcpGWs/resources/log4j2_project.xml'), 'dev,spring,auth,db-apis,ssl,jcp-gateways', springEnvs)
+tasks.bootJcpGWsRun {
+    workingDir('envs/runnables/jcpGWs')
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+task jcpGWs_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn bootJcpGWsRun
+}
+task jcpGWs_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete "envs/runnables/jcpGWs"
+
+    //...delete and recreate jcp_api database in dbms
+}
+clean.dependsOn jcpGWs_Clean
+bootJcpGWsRun.dependsOn printGradleVersions
+
+// JCP JSL Web Bridge
+SpringBuildUtils.makeSpringBootFromSourceSet(project, sourceSets.jcpJSLWebBridge, project.file('src/jcpJSLWebBridge/resources/log4j2_project.xml'), 'dev,spring,auth,data-none,ssl,cors,sessions,jcp-jsl-web-bridge', springEnvs)
+tasks.bootJcpJSLWebBridgeRun {
+    workingDir('envs/runnables/jcpJSLWebBridge')
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+task jcpJSLWebBridge_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn bootJcpJSLWebBridgeRun
+}
+task jcpJSLWebBridge_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete "envs/runnables/jcpJSLWebBridge"
+
+    //...delete and recreate jcp_api database in dbms
+}
+clean.dependsOn jcpJSLWebBridge_Clean
+bootJcpJSLWebBridgeRun.dependsOn printGradleVersions
+
+// JCP FE
+SpringBuildUtils.makeSpringBootFromSourceSet(project, sourceSets.jcpFE, project.file('src/jcpFE/resources/log4j2_project.xml'), 'dev,spring,auth,db-fe,ssl,jcp-frontend',springEnvs)
+tasks.bootJcpFERun {
+    workingDir('envs/runnables/jcpFE')
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+task jcpFE_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn bootJcpFERun
+}
+task jcpFE_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete 'envs/runnables/jcpFE'
+
+    //...delete and recreate jcp_fe database in dbms
+}
+clean.dependsOn jcpFE_Clean
+bootJcpFERun.dependsOn printGradleVersions
+
+// JCP FE Static
+NodeBuildUtils.makeNodeFromSourceSet(project, sourceSets.jcpFE.getName(), file("${project.projectDir}/src/jcpFE/js/node"))
+task processJcpFEResourcesNpm(type: Copy) {
+    dependsOn tasks.nodeJcpFEBuild // ex: processJcpFEResourcesNpmBuild
+
+    from "${project.projectDir}/src/jcpFE/js/node/build"
+    into "${project.projectDir}/build/generated/resources/node/jcpFE/public/frontend"
+}
+tasks.processJcpFEResources.dependsOn tasks.processJcpFEResourcesNpm
+task jcpFEStatic_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn nodeJcpFERun
+}
+task jcpFEStatic_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete "${project.projectDir}/src/jcpFE/js/node/build"
+    delete "${project.projectDir}/src/jcpFE/js/node/node_modules"
+}
+clean.dependsOn tasks.jcpFEStatic_Clean
+nodeJcpFERun.dependsOn printGradleVersions
+
+// JCP All
+SpringBuildUtils.makeSpringBootFromSourceSet(project, sourceSets.jcpAll, project.file('src/jcpAll/resources/log4j2_project.xml'), 'dev,spring,auth,db-all,ssl', springEnvs)
+tasks.bootJcpAllRun {
+    workingDir('envs/runnables/jcpAll')
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+task jcpAll_Start {
+    description = 'Runs...'
+    group = 'JOSP runners jcp (soft)'
+    dependsOn bootJcpAllRun
+}
+task jcpAll_Clean(type: Delete) {
+    group 'JOSP cleaners'
+    delete 'envs/runnables/jcpAll'
+
+    //...delete and recreate jcp_api database in dbms
+}
+clean.dependsOn jcpAll_Clean
+bootJcpAllRun.dependsOn printGradleVersions
+
+
+// -------------------
+// Publication configs
+// -------------------
+
+// JCP Commons
+String jcpCommonsName = 'JCP Commons'
+String jcpCommonsArtifact = 'jcpCommons'
+String jcpCommonsVersion = project.ext.get("version.build.jcpCommons")
+String jcpCommonsDescription = "This is the JCP Commons library from John O.S. Project"
+def jcpCommonsPubDesc = new JavaPublicationUtils.Descriptor(project,sourceSets.jcpCommons,jcpCommonsName,jcpCommonsArtifact,jcpCommonsVersion,jcpCommonsDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpCommonsPubDesc)
+tasks.jcpCommonsDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP DB
+String jcpDBName = 'JCP DB'
+String jcpDBArtifact = 'jcpDB'
+String jcpDBVersion = project.ext.get("version.build.jcpDB")
+String jcpDBDescription = "This is the JCP DB library from John O.S. Project"
+def jcpDBPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpDB, jcpDBName, jcpDBArtifact, jcpDBVersion, jcpDBDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp.db")
+JavaPublicationUtils.generatePublication(project, jcpDBPubDesc)
+tasks.jcpDBDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP DB APIs
+String jcpDBAPIsName = 'JCP DB APIs'
+String jcpDBAPIsArtifact = 'jcpDBAPIs'
+String jcpDBAPIsVersion = project.ext.get("version.build.jcpDBAPIs")
+String jcpDBAPIsDescription = "This is the JCP DB APIs library LE from John O.S. Project"
+def jcpDBAPIsPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpDBAPIs, jcpDBAPIsName, jcpDBAPIsArtifact, jcpDBAPIsVersion, jcpDBAPIsDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp.db")
+JavaPublicationUtils.generatePublication(project, jcpDBAPIsPubDesc)
+tasks.jcpDBAPIsDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP DB FE
+String jcpDBFEName = 'JCP DB FE'
+String jcpDBFEArtifact = 'jcpDBFE'
+String jcpDBFEVersion = project.ext.get("version.build.jcpDBFE")
+String jcpDBFEDescription = "This is the JOSP DB FE library from John O.S. Project"
+def jcpDBFEPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpDBFE, jcpDBFEName, jcpDBFEArtifact, jcpDBFEVersion, jcpDBFEDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp.db")
+JavaPublicationUtils.generatePublication(project, jcpDBFEPubDesc)
+tasks.jcpDBFEDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP Service
+String jcpServiceName = 'JCP Service'
+String jcpServiceArtifact = 'jcpService'
+String jcpServiceVersion = project.ext.get("version.build.jcpService")
+String jcpServiceDescription = "This is the JCP Service library from John O.S. Project"
+def jcpServicePubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpService, jcpServiceName, jcpServiceArtifact, jcpServiceVersion, jcpServiceDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpServicePubDesc)
+tasks.jcpServiceDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP APIs
+String jcpAPIsName = 'JCP APIs'
+String jcpAPIsArtifact = 'jcpAPIs'
+String jcpAPIsVersion = project.ext.get("version.build.jcpAPIs")
+String jcpAPIsDescription = "This is the JCP APIs executable from John O.S. Project"
+def jcpAPIsPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpAPIs, jcpAPIsName, jcpAPIsArtifact, jcpAPIsVersion, jcpAPIsDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setExecutable()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpAPIsPubDesc)
+tasks.jcpAPIsDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP GWs
+String jcpGWsName = 'JCP GWs'
+String jcpGWsArtifact = 'jcpGWs'
+String jcpGWsVersion = project.ext.get("version.build.jcpGWs")
+String jcpGWsDescription = "This is the JCP Gateway executable from John O.S. Project"
+def jcpGWsPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpGWs, jcpGWsName, jcpGWsArtifact, jcpGWsVersion, jcpGWsDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setExecutable()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpGWsPubDesc)
+tasks.jcpGWsDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP JSL Web Bridge
+String jcpJSLWebBridgeName = 'JCP JSL Web Bridge'
+String jcpJSLWebBridgeArtifact = 'jcpJSLWebBridge'
+String jcpJSLWebBridgeVersion = project.ext.get("version.build.jcpJSLWebBridge")
+String jcpJSLWebBridgeDescription = "This is the JCP JSL Web Bridge executable from John O.S. Project"
+def jcpJSLWebBridgePubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpJSLWebBridge, jcpJSLWebBridgeName, jcpJSLWebBridgeArtifact, jcpJSLWebBridgeVersion, jcpJSLWebBridgeDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setExecutable()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpJSLWebBridgePubDesc)
+tasks.jcpJSLWebBridgeDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP FE
+String jcpFEName = 'JCP Front End'
+String jcpFEArtifact = 'jcpFE'
+String jcpFEVersion = project.ext.get("version.build.jcpFE")
+String jcpFEDescription = "This is the JCP Front End executable from John O.S. Project"
+def jcpFEPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpFE, jcpFEName, jcpFEArtifact, jcpFEVersion, jcpFEDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setExecutable()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpFEPubDesc)
+tasks.jcpFEDocs.enabled = !project.ext.get("disableDocs");
+
+// JCP All
+String jcpAllName = 'JCP All'
+String jcpAllArtifact = 'jcpAll'
+String jcpAllVersion = project.ext.get("version.build.jcpAll")
+String jcpAllDescription = "This is the JCP All executable from John O.S. Project"
+def jcpAllPubDesc = new JavaPublicationUtils.Descriptor(project, sourceSets.jcpAll, jcpAllName, jcpAllArtifact, jcpAllVersion, jcpAllDescription)
+        .setUrlsFromProject(project)
+        .setLicenceAGPLv3()
+        .setExecutable()
+        .setArtifactOpens()
+        .setArtifactDistr()
+        .setGroupId((String) project.getGroup() + ".jcp")
+JavaPublicationUtils.generatePublication(project, jcpAllPubDesc)
+tasks.jcpAllDocs.enabled = !project.ext.get("disableDocs");
+
+
+// -----------------
+// Publication tasks
+// -----------------
+
+// All JCP
+task jcp_PublishToLocal {
+    description = 'Publish all JCP components to local repository...'
+    group = 'JOSP publishers (locals)'
+    tasks.all_PublishToLocal.dependsOn jcp_PublishToLocal
+}
+
+// JCP Commons
+task jcpCommons_PublishToLocal {
+    description = 'Publish JCP Commons component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpCommonsPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpCommons_PublishToLocal
+    mustRunAfter jospCommons_PublishToLocal
+    mustRunAfter jospJSL_PublishToLocal
+}
+
+// JCP DB
+task jcpDB_PublishToLocal {
+    description = 'Publish JCP DB component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpDBPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpDB_PublishToLocal
+    mustRunAfter jcpCommons_PublishToLocal
+}
+
+// JCP DB APIs
+task jcpDBAPIs_PublishToLocal {
+    description = 'Publish JCP DB APIs component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpDBAPIsPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpDBAPIs_PublishToLocal
+    mustRunAfter jcpDB_PublishToLocal
+}
+
+// JCP DB FE
+task jcpDBFE_PublishToLocal {
+    description = 'Publish JCP DB FE component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpDBFEPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpDBFE_PublishToLocal
+    mustRunAfter jcpDB_PublishToLocal
+}
+
+// JCP Service
+task jcpService_PublishToLocal {
+    description = 'Publish JCP Service component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpServicePublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpService_PublishToLocal
+    mustRunAfter jcpCommons_PublishToLocal
+}
+
+// JCP APIs
+task jcpAPIs_PublishToLocal {
+    description = 'Publish JCP APIs component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpAPIsPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpAPIs_PublishToLocal
+    mustRunAfter jcpService_PublishToLocal
+    mustRunAfter jcpDBAPIs_PublishToLocal
+}
+
+// JCP GWs
+task jcpGWs_PublishToLocal {
+    description = 'Publish JCP GWs component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpGWsPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpGWs_PublishToLocal
+    mustRunAfter jcpService_PublishToLocal
+    mustRunAfter jcpDBAPIs_PublishToLocal
+}
+
+// JCP JSL Web Bridge
+task jcpJSLWebBridge_PublishToLocal {
+    description = 'Publish JCP JSL Web Bridge component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpJSLWebBridgePublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpJSLWebBridge_PublishToLocal
+    mustRunAfter jcpService_PublishToLocal
+}
+
+// JCP FE
+task jcpFE_PublishToLocal {
+    description = 'Publish JCP Front End component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpFEPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpFE_PublishToLocal
+    mustRunAfter jcpService_PublishToLocal
+    mustRunAfter jcpDBFE_PublishToLocal
+}
+
+// JCP All
+task jcpAll_PublishToLocal {
+    description = 'Publish JCP All component to local repository...'
+    group = 'JOSP publishers (locals)'
+    dependsOn publishJcpAllPublicationToMavenLocal
+    tasks.jcp_PublishToLocal.dependsOn jcpAll_PublishToLocal
+    mustRunAfter jcpAPIs_PublishToLocal
+    mustRunAfter jcpGWs_PublishToLocal
+    mustRunAfter jcpJSLWebBridge_PublishToLocal
+    mustRunAfter jcpFE_PublishToLocal
+}

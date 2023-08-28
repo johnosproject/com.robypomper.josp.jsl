@@ -1,0 +1,5 @@
+Placeholder for API Events
+
+<a href="/swagger-ui.html?urls.primaryName=default">
+Back to All APIs
+</a>

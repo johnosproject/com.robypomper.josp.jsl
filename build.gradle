@@ -1,0 +1,73 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+plugins {
+    id 'com.avast.gradle.docker-compose' //version '0.10.9'
+    id 'org.springframework.boot' //version '2.2.4.RELEASE'                     version not required because specified in buildSrc/build.gradle
+    id 'io.spring.dependency-management' //version '1.0.9.RELEASE'              version not required because specified in buildSrc/build.gradle
+    id "com.github.node-gradle.node" // version "3.0.1"                         // for jcpFE Javascript resources only
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+
+    id 'idea'
+}
+
+apply from: 'gradle/josp_definitions.gradle'
+apply from: 'gradle/josp_project.gradle'
+apply from: 'gradle/josp_versions.gradle'
+
+println "--------------------------"
+println "Building John O.S. Project"
+println "--------------------------"
+println "Mode:                  " + ext.get('jospMode')
+println "Project"
+println "- url:                 " + ext.get('projectUrl')
+println "- git:                 " + ext.get('projectGit')
+println "- git-url:             " + ext.get('projectGitUrl')
+println "JOSP Versions"
+println "- default:             " + ext.get('version.build.josp') + " / " + ext.get('version.deps.josp') + "          (Building / Required)"
+//println "- JOSP APIs            " + ext.get('version.build.jospAPIs') + " / " + ext.get('version.deps.jospAPIs')
+println "JOSP Build configs"
+println "- enablePrivate:       " + ext.get('enablePrivate')
+println "- disableDocs:         " + ext.get('disableDocs')
+
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+apply from: 'gradle/spring_support.gradle'
+apply from: 'gradle/node_configs.gradle'
+
+apply from: 'gradle/build_publications_repo_PRE.gradle'
+apply from: 'gradle/build_commons.gradle'
+apply from: 'gradle/build_dockers.gradle'
+apply from: 'gradle/build_josp.gradle'
+apply from: 'gradle/build_jospcloud.gradle'
+apply from: 'gradle/build_josp_platform.gradle'
+apply from: 'gradle/build_tests.gradle'
+apply from: 'gradle/build_publications_repo_POST.gradle'
+
+if (tasks.findByName("wrapper")==null)
+    task wrapper(type: Wrapper) {
+        gradleVersion = '6.8.2'
+        distributionType = Wrapper.DistributionType.ALL
+    }

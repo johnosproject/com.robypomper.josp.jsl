@@ -1,0 +1,54 @@
+## Configs configs
+
+#JCP_CLIENT_TOKEN_AUTH_DEF= null;   (aka user login code)
+#jcp.client.token.authCode: 'eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1Y2U2Mjg5NS1iNjljLTQ0MmMtYTMwOC04MjA3MTUwZmNmZjMifQ.eyJqdGkiOiIyNTU0NzU2My0yZWZjLTQyZDktOTFjOS0zMzFmNjgwMTI0ZWQiLCJleHAiOjE1OTM3NjU0OTgsIm5iZiI6MCwiaWF0IjoxNTkzNzYzNjk4LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4OTk4L2F1dGgvcmVhbG1zL2pjcCIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0Ojg5OTgvYXV0aC9yZWFsbXMvamNwIiwic3ViIjoiNjdkZTI3NWMtMTg2MS00ZTg2LThlMDMtMmVmNjQzYzhhNTkyIiwidHlwIjoiUmVmcmVzaCIsImF6cCI6InRlc3QtY2xpZW50LXNydiIsImF1dGhfdGltZSI6MCwic2Vzc2lvbl9zdGF0ZSI6IjliOTA4NjNhLTU4NDgtNDY4Ni05OGMxLWIwMTRlNmIyZWMwNyIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzcnYiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCByb2xlcyBlbWFpbCBwcm9maWxlIn0.3ed7OwnIvwhzo0RI5269qCAtNP9sABQTluHwrtSD4bQ'
+
+#JSLUSR_NAME_DEF          = "";
+#jsl.usr.name: 'pinco'
+#JSLUSR_ID_DEF            = "";
+#jsl.usr.id: '67de275c-1861-4e86-8e03-2ef643c8a592'
+
+# JCP_CONNECT_DEF          = "true";
+#jcp.connect: 'false'
+#JSLCOMM_LOCAL_ENABLED_DEF        = "true";
+#jsl.comm.local.enabled: 'false'
+#JSLCOMM_CLOUD_ENABLED_DEF        = "true";
+#jsl.comm.cloud.enabled: 'false'
+
+
+## JCP Client
+
+# JCP_REFRESH_TIME_DEF     = "30";
+#jcp.client.refresh: '5'
+# JCP_URL_DEF_APIS         = "api.johnosproject.org"
+jcp.url.apis: 'localhost:9001'
+# JCP_URL_DEF_AUTH         = "auth.johnosproject.org"
+jcp.url.auth: 'localhost:8998'
+# JCP_CLIENT_ID_DEF        = "";
+jcp.client.id: 'test-client-srv'
+# JCP_CLIENT_SECRET_DEF    = "";
+jcp.client.secret: '88bc8baf-c924-42b9-b691-b2d7c5cec696'
+#JCP_CLIENT_CALLBACK_DEF  = "https://localhost:8080";
+jcp.client.callback: 'https://localhost:9001'
+
+## JSL Service
+
+#JSLSRV_NAME_DEF          = "";
+jsl.srv.id: test-client-srv
+#JSLSRV_ID_DEF            = "";
+jsl.srv.name: Test Client Srv
+
+## User
+
+#...
+
+
+## Communication local
+
+#JSLCOMM_LOCAL_ONLY_LOCALHOST_DEF = "false";
+jsl.comm.local.onlyLocalhost: 'true'
+# JSLCOMM_LOCAL_DISCOVERY_DEF  = "Auto";
+#jsl.comm.local.discovery: 'avahi'
+
+## Communication cloud
+

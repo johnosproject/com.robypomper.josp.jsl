@@ -1,0 +1,7 @@
+Placeholder for API JOSP Cloud Platform
+
+This set of methods is provided by any JCP Service.
+
+<a href="/swagger-ui.html?urls.primaryName=default">
+Back to All APIs
+</a>

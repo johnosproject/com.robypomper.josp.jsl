@@ -1,0 +1,95 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Gradle definitions to manage JOSP build's project.
+ *
+ * Summary:
+ * - JOSP Mode
+ * - JOSP Versions
+ *
+ * <h2>JOSP Mode</h2>
+ * The JOSP Mode is the main configuration on JOSP project building system.
+ * It act as a configurations selector, depending on selected mode it set
+ * different build configs. See 'josp_project.gradle' for more info.
+ *
+ * <h2>JOSP Versions</h2>
+ * The JOSP Versions is a set of constants that defines all JOSP versions.
+ * Those values are used for building JOSP artifact's versions and for their
+ * dependencies.
+ *
+ * To update PREV, CURRENT and NEXT values, you must force fist local publication.
+ * In order to avoid dependencies errors on build system, when the JOSP Versions
+ * values are updated it's required to publish all JOSP Components (on local
+ * repository) with internal JOSP dependencies that points to existing artifacts
+ * on same repository (the local one).
+ *
+ * <b>Note:</b> When released, all published JOSP components and their JOSP dependencies
+ * link to the same JOSP version.
+ */
+
+
+//@formatter:off
+
+// ---------
+// JOSP Mode
+// ---------
+
+def MODE_DEV        = 'dev'
+def MODE_STAGE      = 'stage'
+def MODE_RELEASE    = 'release'
+
+ext.set('jospModes.DEV',MODE_DEV)
+ext.set('jospModes.STAGE',MODE_STAGE)
+ext.set('jospModes.RELEASE',MODE_RELEASE)
+
+
+// -------------
+// JOSP Versions
+// -------------
+
+// All versions
+def v200 = '2.0.0'                  // XX Aug, 2020
+def v210 = '2.1.0'                  // XX Feb, 2021
+def v220 = '2.2.0'                  // 02 Aug, 2021
+def v221 = '2.2.1'                  // 01 Oct, 2021
+def v222 = '2.2.2'                  // 01 Dic, 2021
+def v223 = '2.2.3'                  // 05 Feb, 2022 < Current release
+def v224 = '2.2.4'                  // N/A          < Current hotfix*
+def v230 = '2.3.0'                  // XX Feb, 2022 < Current development
+
+ext.set('jospVersions.200'  ,v200)
+ext.set('jospVersions.210'  ,v210)
+ext.set('jospVersions.220'  ,v220)
+ext.set('jospVersions.221'  ,v221)
+ext.set('jospVersions.222'  ,v222)
+ext.set('jospVersions.223'  ,v223)
+ext.set('jospVersions.224'  ,v224)
+ext.set('jospVersions.230'  ,v230)
+
+// Default versions
+def vPREV       = v222
+def vCURRENT    = v223
+def vNEXT       = v224
+
+ext.set('jospVersions.PREV'     ,vPREV)
+ext.set('jospVersions.CURRENT'  ,vCURRENT)
+ext.set('jospVersions.NEXT'     ,vNEXT)
+
+//@formatter:on

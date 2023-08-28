@@ -1,0 +1,23 @@
+John Cloud Platform versions:   2.2.3-DEV
++-----------------
+| Gradle:          6.8.2
+| Current dir:     /home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp
++-----------------
+| Java Version:    1.8(1.8.0_342)
+| Java VM Version: 1.8
+| Java Runtime:    OpenJDK Runtime Environment
+| Java Home:       /usr/lib/jvm/java-8-openjdk-amd64/jre
+| Java Home (ENV): null
+| Java Vendor:     Private Build
+| Java Libs Path:  /usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+| Java ClassPath:  /home/robypomper/.gradle/wrapper/dists/gradle-6.8.2-all/446le5pselpgh0bzinc35sp0d/gradle-6.8.2/lib/gradle-launcher-6.8.2.jar
++-----------------
+| OS Name:         Linux
+| OS Version:      5.15.0-47-generic
+| Current user:    robypomper
+| Dflt language:   en
+| Dflt encoding:   UTF-8
+| File encoding:   UTF-8
++-----------------
+| Working dir:     /home/robypomper/workspaces/John/Backups/Roby-Mac/com.robypomper.josp
++-----------------

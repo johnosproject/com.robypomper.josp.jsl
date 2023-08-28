@@ -1,0 +1,23 @@
+{
+    "model": "Linux JOSP Object (DEV)",
+    "brand": "Various",
+    "descr": "A Linux computer that expose his features to JOSP's services.",
+    "descr_long": "This object can be used to control remotely functions as system volume, lightning, keyboard, mouse...",
+
+    "contains": {
+        "Volume (Linux)" : {
+            "type": "RangeAction",
+            "puller" : "shell://cmd=scripts/sensors/volume.sh;freq=5",
+            "executor" : "shell://cmd=scripts/sensors/volume.sh %A_VAL%",
+            "min": "0",
+            "max": "100",
+            "step": "5"
+        },
+
+        "Volume Mute (Linux)" : {
+            "type": "BooleanAction",
+            "puller" : "shell://cmd=scripts/sensors/volume_mute.sh;freq=5",
+            "executor" : "shell://cmd=scripts/sensors/volume.sh %A_VAL_BOOL%"
+        }
+    }
+}
