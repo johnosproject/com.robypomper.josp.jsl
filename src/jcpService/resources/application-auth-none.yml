@@ -1,4 +1,0 @@
-keycloak.enabled: false
-
-localhost.public: ${HOST:${HOSTNAME:localhost}}
-oauth2.url: https://${localhost.public}:8998

@@ -1,6 +1,0 @@
-server.ssl.key-store: classpath:jcp_dev.p12
-server.ssl.key-store-password: password
-server.ssl.key-store-type: pkcs12
-server.ssl.key-alias: jcp
-server.ssl.key-password: password
-security.require-ssl: true

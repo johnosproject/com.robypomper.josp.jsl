@@ -1,5 +1,0 @@
-Placeholder for API Gateways
-
-<a href="/swagger-ui.html?urls.primaryName=default">
-Back to All APIs
-</a>
