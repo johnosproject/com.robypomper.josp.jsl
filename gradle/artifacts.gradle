@@ -18,148 +18,224 @@
  ******************************************************************************/
 
 
+import com.robypomper.build.commons.Naming
 import com.robypomper.build.java.JavaPublicationUtils
-import com.robypomper.build.java.JavaRunnableUtils
 import com.robypomper.build.gradle.GradleBuildInfo
 
+import java.text.SimpleDateFormat
+
 /**
- * Gradle configurations to manage JOD and JSL as java implementations.
+ * Project's artifacts' definitions from their sourceSets until their publications.
  */
 
 
 // ------------------
-// Components configs
+// Sources configs
 // ------------------
 
-sourceSets {
-    jospJSL {}
-}
+sourceSets {}
 
 configurations {}
 
 dependencies {
-    jospJSLImplementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
-    jospJSLImplementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
-    jospJSLImplementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
-    jospJSLRuntimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
+    implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
+    implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
+    implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
+    runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
 
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main, (String) project.ext.get("artifactVersion"))
 
-GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jospJSL, (String)project.ext.get("version.build.jospJSL"));
 
 // -------------
 // Runners Tasks
 // -------------
 
-// Utils: Make Java Runnable
-def makeJSLJavaRunnable(String runnableName, String config_yml) {
-    makeJSLJavaRunnable(runnableName, config_yml, null, true)
-}
-def makeJSLJavaRunnable(String runnableName, String config_yml, String group_name) {
-    makeJSLJavaRunnable(runnableName, config_yml, group_name, true)
-}
-def makeJSLJavaRunnable(String runnableName, String config_yml, boolean overrideIfExist) {
-    makeJSLJavaRunnable(runnableName, config_yml, null, overrideIfExist)
-}
-def makeJSLJavaRunnable(String runnableName, String config_yml, String group_name, boolean overrideIfExist) {
-    runnableName = "JSL${runnableName}"
-    String mainClass = 'com.robypomper.josp.jsl.JSLShell'
-    File workingDir = file("envs/runnables/jsl/${runnableName}")
+boolean overrideIfExist = false
+String FileConfigs_JSL = "src/main/configs/jsl_default.yml"
+String FileConfigs_Log4j2 = 'src/main/configs/log4j2/log4j2.xml'
+File WorkingDir = file("envs/runnables/jsl")
+String MainClass = !hasProperty('artifactMainClass')
+        ? null
+        : ext.get('artifactMainClass')
 
-    JavaRunnableUtils.makeJavaFromSourceSet(project, sourceSets.jospJSL, mainClass, runnableName, workingDir)
-    String jarTaskName = "java${runnableName}Run"
+tasks.run {
+    classpath(sourceSets.main.getRuntimeClasspath())
 
-    tasks.getByName(jarTaskName) {
-        group = group_name==null ? 'JOSP runners jsl' : "JOSP runners jsl ($group_name)"
-        standardInput = System.in
-        //args = ['--configs', 'src/jospJSL/configs/jsl_dev.yml']
-        //jvmArgs = ['-Djavax.net.debug=ssl']
-        jvmArgs = ['-Dlog4j.configurationFile=' + project.file('src/jospJSL/configs/log4j2/log4j2.xml').absolutePath]
+    setWorkingDir(WorkingDir)
+    doFirst {
+        if (!WorkingDir.exists())
+            WorkingDir.mkdirs()
+    }
 
-        doFirst {
-            if (workingDir.exists() && overrideIfExist)
-                delete workingDir
+    if (MainClass != null)
+        setMain(MainClass)
 
-            if (!workingDir.exists())
-                copy {
-                    from "src/jospJSL/configs/${config_yml}"
-                    rename 'jsl(.+).yml', 'jsl.yml'
-                    into workingDir
-                }
-        }
+    jvmArgs = [
+            //'-Dlog4j.configurationFile=' + project.file(FileConfigs_Log4j2).absolutePath,
+            //'-Djavax.net.debug=ssl',
+    ]
+    args = [
+            //'--configs', 'src/jospJOD/configs/jod_dev.yml',
+    ]
+
+    standardInput = System.in
+
+    doFirst {
+        if (WorkingDir.exists() && overrideIfExist)
+            delete WorkingDir
+
+        if (!WorkingDir.exists())
+            copy {
+                from FileConfigs_JSL
+                rename 'jsl(.+).yml', 'jsl.yml'
+                from FileConfigs_Log4j2
+                rename 'log4j2(.+).xml', 'log4j2.xml'
+                into "$WorkingDir"
+            }
     }
 }
 
-makeJSLJavaRunnable('','jsl_default.yml',false)
-makeJSLJavaRunnable('OnlyLocal','jsl_only-local.yml',false)
-makeJSLJavaRunnable('OnlyCloud','jsl_only-cloud.yml',false)
-makeJSLJavaRunnable('NoComm','jsl_no-comm.yml',false)
-makeJSLJavaRunnable('Vanilla','jsl_default.yml')
-makeJSLJavaRunnable('VanillaOnlyLocal','jsl_only-local.yml')
-makeJSLJavaRunnable('VanillaOnlyCloud','jsl_only-cloud.yml')
-makeJSLJavaRunnable('VanillaNoComm','jsl_no-comm.yml')
-task javaJSL_Clean(type: Delete) {
+tasks.clean.doFirst {
     group 'JOSP cleaners'
-    delete "envs/runnables/jsl/JSL"
+    delete WorkingDir
 }
-clean.dependsOn javaJSL_Clean
-
-
-// ---------------------
-// Runners Configs Tasks
-// ---------------------
-
-/**
- * Usr    =>  unset   set   anonymous
- *            when set, check that set token is valid and not expired
- *
- * Configs (Usr, Off/Online)
- */
-makeJSLJavaRunnable('uf','configs/jsl_uf.yml','Configs')
-makeJSLJavaRunnable('un','configs/jsl_un.yml','Configs')
-makeJSLJavaRunnable('sf','configs/jsl_sf.yml','Configs')
-makeJSLJavaRunnable('sn','configs/jsl_sn.yml','Configs')
-
-
-// -----------------------
-// Runners Discovery Tasks
-// -----------------------
-
-/**
- * Usr    =>  unset   set   anonymous
- *            when set, check that set token is valid and not expired
- *
- * Configs (Usr, Off/Online)
- */
-makeJSLJavaRunnable('Avahi','discovery/jsl_avahi.yml','Discovery')
-makeJSLJavaRunnable('JmDNS','discovery/jsl_jmdns.yml','Discovery')
-makeJSLJavaRunnable('DNSSD','discovery/jsl_dnssd.yml','Discovery')
-makeJSLJavaRunnable('JmmDNS','discovery/jsl_jmmdns.yml','Discovery')
 
 
 // -------------------
 // Publication configs
 // -------------------
 
-String jospJSLName = ext.get('artifactLongName')
-String jospJSLArtifact = ext.get('artifactName')
-String jospJSLVersion = ext.get('artifactVersion')
-String jospJSLDescription = ext.get('artifactDescription')
-def jospJSLPubDesc = new JavaPublicationUtils.Descriptor(project,sourceSets.jospJSL,jospJSLName,jospJSLArtifact,jospJSLVersion,jospJSLDescription)
-        .setUrlsFromProject(project)
-        .setLicenceGPLv3()
-        .setExecutable()
-        .setArtifactOpens()
-        .setArtifactDistr()
-JavaPublicationUtils.generatePublication(project,jospJSLPubDesc)
-tasks.jospJSLDocs.enabled = !project.ext.get("disableDocs");
+String pubName = ext.get('artifactLongName')
+String pubArtifact = ext.get('artifactName')
+String pubDescription = ext.get('artifactDescription')
+String pubGroupId = ext.get('artifactGroupId')
+String pubVersion = ext.get('artifactVersion')
+String pubUrl = ext.get('projectUrl')
+String pubGit = ext.get('projectGit')
+String pubGitUrl = ext.get('projectGitUrl')
+String pubLicence = ext.get('artifactLicence')
+String pubLicenceUrl = ext.get('artifactLicenceUrl')
+String pubMainClass = hasProperty('artifactMainClass') ? ext.get('artifactMainClass') : null
+SourceSet pubSourcesSet = sourceSets.main
 
-// -----------------
-// Publication tasks
-// -----------------
+tasks.jar {
+    doFirstArchiveBaseName(it, pubArtifact)
 
-task jospJSL_PublishToLocal {
-    description = 'Publish JOSP JSL component to local repository...'
-    group = 'JOSP publishers (locals)'
-    dependsOn publishJospJSLPublicationToMavenLocal
+    //from(jospJODSourcesSet.getOutput())
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.register("jarDeps", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    setClassifier(JavaPublicationUtils.CLASSIFIER_DEP)
+    doFirstArchiveBaseName(it, pubArtifact)
+
+    List<File> fs = new ArrayList<>()
+    for (File f : pubSourcesSet.getRuntimeClasspath())
+        if (f.exists() && !f.isDirectory())
+            fs.add(f)
+    from(fs)
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.javadoc {
+    setTitle(String.format("%s JavaDocs", Naming.capitalize(pubName)))
+
+    FileCollection classPath = it.getClasspath()
+    classPath = classPath + pubSourcesSet.getRuntimeClasspath()
+    classPath = classPath + project.files(pubSourcesSet.getCompileClasspath().getFiles())
+    classPath = classPath + pubSourcesSet.getAnnotationProcessorPath()
+    setClasspath(classPath)
+
+    setFailOnError(false)
+
+    enabled = !project.ext.get("disableDocs")
+}
+
+tasks.register("jarDocs", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    setClassifier(JavaPublicationUtils.CLASSIFIER_DOC)
+    doFirstArchiveBaseName(it, pubArtifact)
+
+    from(tasks.javadoc.getOutputs())
+
+    enabled = !project.ext.get("disableDocs")
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.register("jarSrc", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    setClassifier(JavaPublicationUtils.CLASSIFIER_SRC)
+    doFirstArchiveBaseName(it, pubArtifact)
+
+    from(pubSourcesSet.getAllSource())
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+publishing {
+    publications {
+        myPub(MavenPublication) {
+            groupId = pubGroupId
+            artifactId = pubArtifact
+            version = pubVersion
+
+            artifact jar
+            artifact jarDeps
+            artifact jarDocs
+            artifact jarSrc
+        }
+    }
+}
+def pub_pom = publishing.publications.myPub.getPom()
+JavaPublicationUtils.initPom(pub_pom, pubName, pubDescription, pubUrl, pubGit, pubGitUrl, pubLicence, pubLicenceUrl)
+def pub_configs = configurations.getByName(pubSourcesSet.getImplementationConfigurationName())
+JavaPublicationUtils.injectDependenciesToPom(pub_pom, pub_configs, true)
+
+
+
+// -------------
+// Utils methods
+// -------------
+
+static void doFirstArchiveBaseName(final org.gradle.jvm.tasks.Jar jarTask, String baseName) {
+    jarTask.doFirst(new Action<Task>() {
+        @Override
+        public void execute(Task task) {
+            jarTask.setBaseName(baseName)
+        }
+    })
+}
+
+static Map<String, String> prepareManifestAttributes(SourceSet sourceSet, String name, String version, String licence, String licenceUrl, String mainClass, String nameExtension) {
+    //@formatter:off
+    Map<String, String> res = new HashMap<>()
+    res.put("Implementation-Title"      , name + (nameExtension.isEmpty() ? "" : " - " + Naming.capitalize(nameExtension)))
+    res.put("Implementation-Version"    , version)
+    res.put("Implementation-Variant"    , (nameExtension.isEmpty() ? "default" : " - " + Naming.capitalize(nameExtension)))
+
+    res.put("Licence"                   , licence)
+    res.put("Licence-Url"               , licenceUrl)
+
+    if (mainClass != null)
+        res.put("Main-Class"            , mainClass)
+
+    res.put("Built-By"                  , System.getProperty("user.name"))
+    res.put("Build-Timestamp"           , new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()))
+    res.put("Created-By"                , String.format("Gradle %s", System.getProperty("gradle.gradleVersion}")))
+    res.put("Build-Jdk"                 , String.format("%s (%s %s)", System.getProperty("java.version"), System.getProperty("java.vendor"), System.getProperty("java.vm.version")))
+    res.put("Build-OS"                  , String.format("%s %s %s", System.getProperty("os.name"), System.getProperty("os.arch"), System.getProperty("os.version")))
+    StringBuilder classPath = new StringBuilder()
+    for (File f : sourceSet.getRuntimeClasspath().getFiles())
+        if (f.getName().endsWith(".jar"))
+            classPath.append(String.format("libs/%s ", f.getName()))
+    res.put("Class-Path"                , classPath.toString())
+
+    //res.put("Build-Revision"            : versioning.info.commit)
+    //@formatter:on
+    return res
 }
