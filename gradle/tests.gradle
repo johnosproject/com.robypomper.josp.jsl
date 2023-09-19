@@ -43,8 +43,8 @@
 sourceSets {}
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+    testImplementation "org.junit.jupiter:junit-jupiter:${project.ext.get("version.junit-jupiter")}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
     testImplementation sourceSets.main.output
     testImplementation sourceSets.main.runtimeClasspath

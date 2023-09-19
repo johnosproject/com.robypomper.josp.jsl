@@ -96,23 +96,9 @@ ext {
 
 //@formatter:off
 ext {
-    //set('version.SpringCloud'       , 'Hoxton.SR9')
-    //set('version.tomcat'            , '9.0.30')
-    //set('version.Keycloak'          , '14.0.0')
-    set('version.slf4j'             , '1.7.30')
-    //set('version.apache.log4j'      , '2.13.1')
-    //set('version.snakeyaml'         , '1.25')
-    //set('version.scribejava'        , '6.9.0')
-    //set('version.lombok'            , '1.18.12')
-    //set('version.jakarta'           , '2.2.3')
-    //set('version.hibernate'         , '5.4.10.Final')
-    //set('version.jmdns'             , '3.5.5')
-    set('version.cli'               , '1.4')
-    set('version.cliche'            , '110413')
-    //set('version.swagger'           , '1.5.21')
-    //set('version.swaggerSpring'     , '2.9.2')
-    //set('version.jackson'           , '2.10.2')
-    //set('version.htmlcleaner'       , '2.24')
-    //set('version.json-path'         , '2.4.0')
+    set('version.cli'                 , '1.5.0')
+    set('version.cliche'              , '110413')
+    set('version.slf4j'               , '2.0.9')
+    set('version.junit-jupiter'       , '5.10.0')
 }
 //@formatter:on
