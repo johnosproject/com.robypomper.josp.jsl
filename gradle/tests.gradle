@@ -40,36 +40,14 @@
 // SourceSes configs
 // -----------------
 
-sourceSets {
-
-    // Test's Commons
-
-    test_Commons {
-        java.srcDirs 'tests/test_Commons/java'
-        resources.srcDirs 'tests/test_Commons/resources'
-    }
-
-
-    // JSL
-
-    test_jospJSLComm {
-        java.srcDirs 'tests/test_jospJSLComm/java'
-        resources.srcDirs 'tests/test_jospJSLComm/resources'
-    }
-
-}
+sourceSets {}
 
 dependencies {
-    // Test's commons
-    test_CommonsImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
-    test_CommonsRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
-    test_CommonsImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospCommons")}"
-    test_CommonsImplementation sourceSets.main.output
-    test_CommonsImplementation sourceSets.main.runtimeClasspath
-
-    // JSL
-    test_jospJSLCommImplementation sourceSets.test_Commons.output
-    test_jospJSLCommImplementation sourceSets.test_Commons.runtimeClasspath
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+    testImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
+    testImplementation sourceSets.main.output
+    testImplementation sourceSets.main.runtimeClasspath
 }
 
 
@@ -77,23 +55,9 @@ dependencies {
 // Tests Tasks
 // -----------
 
-task jospJSLAllTest(type: Test) {
-    description = 'Runs all JSL tests.'
-    group = 'verification'
-}
-check.dependsOn jospJSLAllTest
-
-task jospJSLCommTest(type: Test) {
-    description = 'Runs JSL Communication tests.'
-    group = 'verification'
-
-    testClassesDirs = sourceSets.test_jospJSLComm.output.classesDirs
-    classpath = sourceSets.test_jospJSLComm.runtimeClasspath
-    shouldRunAfter test
+tasks.test {
     useJUnitPlatform()
-    //jvmArgs '-Djavax.net.debug=all'
 }
-jospJSLAllTest.dependsOn jospJSLCommTest
 
 
 // ----------------
@@ -103,7 +67,7 @@ jospJSLAllTest.dependsOn jospJSLCommTest
 // gradle > intellij settings
 idea {
     module {
-        testSourceDirs += project.sourceSets.test_jospJSLComm.java.srcDirs
-        testSourceDirs += project.sourceSets.test_jospJSLComm.resources.srcDirs
+        //testSourceDirs += project.sourceSets.test.java.srcDirs
+        //testSourceDirs += project.sourceSets.test.resources.srcDirs
     }
 }
