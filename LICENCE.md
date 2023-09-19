@@ -1,3 +1,7 @@
+# JSL LICENCE
+
+[README](README.md) | [SPECS](docs/specs.md) | [GUIDES](docs/guides.md) | [CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
+
 The John Service Library is the software library to connect "software" to
 an IoT EcoSystem, like the John Operating System Platform one.
 Copyright 2021 Roberto Pompermaier
@@ -17,10 +21,9 @@ limitations under the License.
 
 Author: Roberto Pompermaier
 robypomper@johnosproject.com
-Via Tre Santi, 5 - Bolzano (ITALY)
 
-
-
+---
+```
 Apache License
                        Version 2.0, January 2004
                     http://www.apache.org/licenses/
@@ -197,3 +200,4 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
   of your accepting any such warranty or additional liability.
 
 END OF TERMS AND CONDITIONS
+```
