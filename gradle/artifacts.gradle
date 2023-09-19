@@ -179,7 +179,7 @@ tasks.register("jarSrc", org.gradle.jvm.tasks.Jar.class) {
 
 publishing {
     publications {
-        myPub(MavenPublication) {
+        "$pubArtifact"(MavenPublication) {
             groupId = pubGroupId
             artifactId = pubArtifact
             version = pubVersion
@@ -191,7 +191,7 @@ publishing {
         }
     }
 }
-def pub_pom = publishing.publications.myPub.getPom()
+def pub_pom = publishing.publications."$pubArtifact".getPom()
 JavaPublicationUtils.initPom(pub_pom, pubName, pubDescription, pubUrl, pubGit, pubGitUrl, pubLicence, pubLicenceUrl)
 def pub_configs = configurations.getByName(pubSourcesSet.getImplementationConfigurationName())
 JavaPublicationUtils.injectDependenciesToPom(pub_pom, pub_configs, true)
