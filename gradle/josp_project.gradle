@@ -56,8 +56,18 @@ ext {
     // PROJECT BUILD CONFIGURATIONS - START
 
     set('projectUrl', 'https://www.johnosproject.org')
-    set('projectGit', 'bitbucket.org:johnosproject_shared/com.robypomper.josp.git')
-    set('projectGitUrl', 'https://bitbucket.org/johnosproject_shared/com.robypomper.josp')
+    set('projectGit', 'git@github.com:johnosproject/com.robypomper.josp.jsl.git')
+    set('projectGitUrl', 'https://github.com/johnosproject/com.robypomper.josp.jsl')
+    set('projectArtifactsRepoUrl.Releases', "https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+    set('projectArtifactsRepoUrl.Snapshots', "https://oss.sonatype.org/content/repositories/snapshots/")
+
+    set('artifactLongName', 'JOSP Service Library')
+    set('artifactName', 'jospJSL')
+    set('artifactDescription', 'This is the JOSP JSL library from John O.S. Project')
+    set('artifactGroupId', 'com.robypomper.josp')
+    set('artifactMainClass', 'com.robypomper.josp.jsl.JSLShell')
+    set('artifactLicence', 'Apache2.0')
+    set('artifactLicenceUrl', 'https://www.apache.org/licenses/LICENSE-2.0.txt')
 
     // Preset build modes for JOSP Project
     //set('jospMode', ext.get('jospModes.DEV'))           // on first build, set jospDependenciesVersion=CURRENT
@@ -95,6 +105,16 @@ def enablePrivate = hasProperty('OVERRIDE_enablePrivate')
         ? false
         : true
 )
+String err_tmpl = "Missing publication repository credentials (%s).\nPlease add them to the '\$HOME/.gradle/gradle.properties' file."
+if (enablePrivate) {
+    if (!project.hasProperty('sonatypeUser')
+            || !project.hasProperty('sonatypePassword'))
+        throw new InvalidUserDataException(err_tmpl.format("sonatypeUser and sonatypePassword"))
+    if (!project.hasProperty('signing.keyId')
+            || !project.hasProperty('signing.password')
+            || !project.hasProperty('signing.secretKeyRingFile'))
+        throw new InvalidUserDataException(String.format(err_tmpl, "signing.keyId, signing.password and signing.secretKeyRingFile"))
+}
 ext.set('enablePrivate', enablePrivate)
 
 // disableDocs

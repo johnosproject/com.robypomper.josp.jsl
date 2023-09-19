@@ -18,22 +18,42 @@
  ******************************************************************************/
 
 /**
- * Configuration for remote publication of JOSP Components.
+ * Add current project's publication urls as build system repositories.
  *
- * Those configs allow to fecth JOSP components as dependencies from STAGE's
- * repository.
+ * Add current projectArtifactsRepoUrl to build system repositories. That allows
+ * Gradle download artifacts (as dependencies) from the projectArtifactsRepoUrl
+ * maven repository.
+ *
+ * If `enablePrivate` is `True` then it configure also private credentials to
+ * list and download private artifacts, like the snapshots ones.
+ *
+ * Depending on the `jospMode` property it will use the Snapshot or the Release
+ * repository url.
+ *
+ * Required properties:
+ * * `enablePrivate`:
+ * * `projectArtifactsRepoUrl.Releases`:
+ * * `projectArtifactsRepoUrl.Snapshot`:
  */
 
-def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE') ? releasesRepoUrl : snapshotsRepoUrl
+
+if (!hasProperty("enablePrivate"))
+    throw new GradleScriptException("Property 'enablePrivate.Releases' not set, aborting!", null)
+def enablePrivate = ext.get('enablePrivate')
+
+if (!hasProperty("projectArtifactsRepoUrl.Releases"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Releases' not set, aborting!", null)
+if (!hasProperty("projectArtifactsRepoUrl.Snapshots"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Snapshots' not set, aborting!", null)
+def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE')
+        ? ext.get("projectArtifactsRepoUrl.Releases")
+        : ext.get("projectArtifactsRepoUrl.Snapshots")
 
 
 // ------------------------
 // Maven repository configs
 // ------------------------
 
-def enablePrivate = ext.get('enablePrivate')
 
 if (ext.get('jospMode') == ext.get('jospModes.STAGE') || ext.get('jospMode') == ext.get('jospModes.RELEASE')) {
     repositories {

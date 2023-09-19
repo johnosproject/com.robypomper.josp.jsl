@@ -24,35 +24,6 @@ import com.robypomper.build.gradle.GradleBuildInfo
 
 /**
  * Gradle configurations to manage JOD and JSL as java implementations.
- *
- * Components list:
- * <ul>
- *     <li>
- *         JOSP JSL
- *     </li>
- * </ul>
- *
- * Summary:
- * <ul>
- *     <li>
- *         Components configs: sourceSets, configurations, dependencies and BuildInfo
- *     </li>
- *     <li>
- *         Runners Tasks: task to run components as java application
- *     </li>
- *     <li>
- *         Runners Configs Tasks: task to run components as java application with different configurations
- *     </li>
- *     <li>
- *         Runners Discovery Tasks: task to run components as java application with different discovery systems
- *     </li>
- *     <li>
- *         Publication configs: component's publications
- *     </li>
- *     <li>
- *         Publication tasks: publication's tasks to local repository
- *     </li>
- * </ul>
  */
 
 
@@ -70,10 +41,9 @@ dependencies {
     jospJSLImplementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     jospJSLImplementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     jospJSLImplementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
-    jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${project.ext.get("version.apache.log4j")}"
-    jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-api:${project.ext.get("version.apache.log4j")}"
-    jospJSLRuntimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
+    jospJSLRuntimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
+
 
 GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.jospJSL, (String)project.ext.get("version.build.jospJSL"));
 
@@ -171,10 +141,10 @@ makeJSLJavaRunnable('JmmDNS','discovery/jsl_jmmdns.yml','Discovery')
 // Publication configs
 // -------------------
 
-String jospJSLName = 'JOSP Service Library'
-String jospJSLArtifact = 'jospJSL'
-String jospJSLVersion = project.ext.get("version.build.jospJSL")
-String jospJSLDescription = "This is the JOSP JSL library from John O.S. Project"
+String jospJSLName = ext.get('artifactLongName')
+String jospJSLArtifact = ext.get('artifactName')
+String jospJSLVersion = ext.get('artifactVersion')
+String jospJSLDescription = ext.get('artifactDescription')
 def jospJSLPubDesc = new JavaPublicationUtils.Descriptor(project,sourceSets.jospJSL,jospJSLName,jospJSLArtifact,jospJSLVersion,jospJSLDescription)
         .setUrlsFromProject(project)
         .setLicenceGPLv3()

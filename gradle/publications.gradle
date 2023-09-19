@@ -41,16 +41,25 @@
  * </ul>
  */
 
-def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE') ? releasesRepoUrl : snapshotsRepoUrl
+if (!hasProperty("enablePrivate"))
+    throw new GradleScriptException("Property 'enablePrivate.Releases' not set, aborting!", null)
+def enablePrivate = ext.get('enablePrivate')
+
+if (!hasProperty("projectArtifactsRepoUrl.Releases"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Releases' not set, aborting!", null)
+if (!hasProperty("projectArtifactsRepoUrl.Snapshots"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Snapshots' not set, aborting!", null)
+def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE')
+        ? ext.get("projectArtifactsRepoUrl.Releases")
+        : ext.get("projectArtifactsRepoUrl.Snapshots")
 
 
-// -------------------
-// Publication configs
-// -------------------
+if (enablePrivate) {
 
-if (ext.get('enablePrivate')) {
+    // -------------------
+    // Publication configs
+    // -------------------
+
     publishing {
 
         publications.each { pub ->
@@ -70,16 +79,11 @@ if (ext.get('enablePrivate')) {
         }
     }
 
-}   // if (ext.get(enablePrivate))
+    // -----------------
+    // Publication tasks
+    // -----------------
 
-
-// -----------------
-// Publication tasks
-// -----------------
-
-if (ext.get('enablePrivate')) {
-
-    task jospJSL_PublishToRemote {
+    tasks.register("jospJSL_PublishToRemote") {
         description = 'Publish JOSP JSL component to remote repository...'
         group = 'JOSP publishers (remote)'
         dependsOn publishJospJSLPublicationToMavenRepository
