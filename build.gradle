@@ -22,14 +22,14 @@ plugins {
     id 'application'
     id 'maven-publish'
     id 'signing'
-
-    id 'idea'
 }
+
 
 apply from: 'gradle/josp_definitions.gradle'
 apply from: 'gradle/josp_project.gradle'
 apply from: 'gradle/josp_versions.gradle'
 ext.set('artifactVersion', ext.get('version.build.jospJSL'))
+
 
 println "--------------------------"
 println "Building John O.S. Project - " + ext.get('artifactLongName')
@@ -49,10 +49,12 @@ println "JOSP Build configs"
 println "- enablePrivate:       " + ext.get('enablePrivate')
 println "- disableDocs:         " + ext.get('disableDocs')
 
+
 repositories {
     mavenCentral()
     mavenLocal()
 }
+
 
 apply from: 'gradle/publications_repo.gradle'
 apply from: 'gradle/artifacts.gradle'

@@ -58,16 +58,3 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
-
-
-// ----------------
-// IntelliJ Modules
-// ----------------
-
-// gradle > intellij settings
-idea {
-    module {
-        //testSourceDirs += project.sourceSets.test.java.srcDirs
-        //testSourceDirs += project.sourceSets.test.resources.srcDirs
-    }
-}
