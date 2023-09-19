@@ -87,7 +87,7 @@ ext.set('jospVersions.230'  ,v230)
 // Default versions
 def vPREV       = v222
 def vCURRENT    = v223
-def vNEXT       = v230
+def vNEXT       = v224
 
 ext.set('jospVersions.PREV'     ,vPREV)
 ext.set('jospVersions.CURRENT'  ,vCURRENT)
