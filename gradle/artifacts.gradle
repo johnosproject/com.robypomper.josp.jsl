@@ -129,17 +129,17 @@ String pubMainClass = hasProperty('artifactMainClass') ? ext.get('artifactMainCl
 SourceSet pubSourcesSet = sourceSets.main
 
 tasks.jar {
-    doFirstArchiveBaseName(it, pubArtifact)
-
-    //from(jospJODSourcesSet.getOutput())
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
 
     getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
 }
 
 tasks.register("jarDeps", org.gradle.jvm.tasks.Jar.class) {
     setGroup(BasePlugin.BUILD_GROUP)
-    setClassifier(JavaPublicationUtils.CLASSIFIER_DEP)
-    doFirstArchiveBaseName(it, pubArtifact)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = JavaPublicationUtils.CLASSIFIER_DEP
 
     List<File> fs = new ArrayList<>()
     for (File f : pubSourcesSet.getRuntimeClasspath())
@@ -166,8 +166,9 @@ tasks.javadoc {
 
 tasks.register("jarDocs", org.gradle.jvm.tasks.Jar.class) {
     setGroup(BasePlugin.BUILD_GROUP)
-    setClassifier(JavaPublicationUtils.CLASSIFIER_DOC)
-    doFirstArchiveBaseName(it, pubArtifact)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = JavaPublicationUtils.CLASSIFIER_DOC
 
     from(tasks.javadoc.getOutputs())
 
@@ -178,8 +179,9 @@ tasks.register("jarDocs", org.gradle.jvm.tasks.Jar.class) {
 
 tasks.register("jarSrc", org.gradle.jvm.tasks.Jar.class) {
     setGroup(BasePlugin.BUILD_GROUP)
-    setClassifier(JavaPublicationUtils.CLASSIFIER_SRC)
-    doFirstArchiveBaseName(it, pubArtifact)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = JavaPublicationUtils.CLASSIFIER_SRC
 
     from(pubSourcesSet.getAllSource())
 
@@ -210,15 +212,6 @@ JavaPublicationUtils.injectDependenciesToPom(pub_pom, pub_configs, true)
 // -------------
 // Utils methods
 // -------------
-
-static void doFirstArchiveBaseName(final org.gradle.jvm.tasks.Jar jarTask, String baseName) {
-    jarTask.doFirst(new Action<Task>() {
-        @Override
-        void execute(Task task) {
-            jarTask.setBaseName(baseName)
-        }
-    })
-}
 
 static Map<String, String> prepareManifestAttributes(SourceSet sourceSet, String name, String version, String licence, String licenceUrl, String mainClass, String nameExtension) {
     //@formatter:off

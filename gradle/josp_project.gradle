@@ -69,6 +69,8 @@ ext {
     set('artifactLicence', 'Apache2.0')
     set('artifactLicenceUrl', 'https://www.apache.org/licenses/LICENSE-2.0.txt')
 
+    set('gradleWrapperVersion', '8.3')
+
     // Preset build modes for JOSP Project
     set('jospMode', ext.get('jospModes.RELEASE'))       // valid values: DEV, SNAPSHOT or RELEASE
 

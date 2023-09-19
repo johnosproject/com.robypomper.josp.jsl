@@ -206,7 +206,8 @@ public class JavaPublicationUtils {
         Jar javaJar = project.getTasks().create(jarTaskName, Jar.class);
         javaJar.setDescription(String.format("Assembles an jar archive containing the %s classes.", pubDescr.sourceSet.getName()));
         javaJar.setGroup(BasePlugin.BUILD_GROUP);
-        doFirstArchiveBaseName(javaJar, pubDescr.artifact);
+        javaJar.getArchiveBaseName().set(pubDescr.artifact);
+        javaJar.getArchiveVersion().set(pubDescr.version);
         javaJar.from(pubDescr.sourceSet.getOutput());
         javaJar.getManifest().attributes(ManifestUtils.prepareManifestAttributes(pubDescr));
         return javaJar;
@@ -221,8 +222,9 @@ public class JavaPublicationUtils {
         Jar javaJar = project.getTasks().create(jarTaskName, Jar.class);
         javaJar.setDescription(String.format("Assembles an jar archive containing all %s dependencies.", pubDescr.sourceSet.getName()));
         javaJar.setGroup(BasePlugin.BUILD_GROUP);
-        javaJar.setClassifier(CLASSIFIER_DEP);
-        doFirstArchiveBaseName(javaJar, pubDescr.artifact);
+        javaJar.getArchiveBaseName().set(pubDescr.artifact);
+        javaJar.getArchiveVersion().set(pubDescr.version);
+        javaJar.getArchiveClassifier().set(CLASSIFIER_DEP);
         List<File> fs = new ArrayList<>();
         for (File f : pubDescr.sourceSet.getRuntimeClasspath())
             if (f.exists() && !f.isDirectory())
@@ -297,8 +299,9 @@ public class JavaPublicationUtils {
         Jar javaDocJar = project.getTasks().create(docJarTaskName, Jar.class);
         javaDocJar.setDescription(String.format("Assembles an jar archive containing the %s Java Docs.", pubDescr.sourceSet.getName()));
         javaDocJar.setGroup(BasePlugin.BUILD_GROUP);
-        javaDocJar.setClassifier(CLASSIFIER_DOC);
-        doFirstArchiveBaseName(javaDocJar, pubDescr.artifact);
+        javaDocJar.getArchiveBaseName().set(pubDescr.artifact);
+        javaDocJar.getArchiveVersion().set(pubDescr.version);
+        javaDocJar.getArchiveClassifier().set(CLASSIFIER_DOC);
         javaDocJar.from(javaDoc.getOutputs());
         javaDocJar.getManifest().attributes(ManifestUtils.prepareManifestAttributes(pubDescr, ManifestUtils.EXT_DOCS));
         return javaDocJar;
@@ -313,8 +316,9 @@ public class JavaPublicationUtils {
         Jar javaSrcJar = project.getTasks().create(srcJarTaskName, Jar.class);
         javaSrcJar.setDescription(String.format("Assembles an jar archive containing the %s source code.", pubDescr.sourceSet.getName()));
         javaSrcJar.setGroup(BasePlugin.BUILD_GROUP);
-        javaSrcJar.setClassifier(CLASSIFIER_SRC);
-        doFirstArchiveBaseName(javaSrcJar, pubDescr.artifact);
+        javaSrcJar.getArchiveBaseName().set(pubDescr.artifact);
+        javaSrcJar.getArchiveVersion().set(pubDescr.version);
+        javaSrcJar.getArchiveClassifier().set(CLASSIFIER_SRC);
         javaSrcJar.from(pubDescr.sourceSet.getAllSource());
         javaSrcJar.getManifest().attributes(ManifestUtils.prepareManifestAttributes(pubDescr, ManifestUtils.EXT_SOURCES));
         return javaSrcJar;
@@ -357,15 +361,6 @@ public class JavaPublicationUtils {
         JavaPublicationUtils.injectDependenciesToPom(p.getPom(), compRuntimeConfig, true);
 
         return p;
-    }
-
-    private static void doFirstArchiveBaseName(final Jar jarTask, String baseName) {
-        jarTask.doFirst(new Action<Task>() {
-            @Override
-            public void execute(Task task) {
-                jarTask.setBaseName(baseName);
-            }
-        });
     }
 
 
