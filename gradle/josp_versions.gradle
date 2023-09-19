@@ -68,7 +68,7 @@ jospBuildVersion += hasProperty('OVERRIDE_jospBuildClassifier')             // d
 
 def jospDependenciesVersion = hasProperty('OVERRIDE_jospDependenciesVersion')              // define versions current source code provide
         ? ext.get('OVERRIDE_jospDependenciesVersion')
-        : jospBuildVersion
+        : ext.get('jospVersions.CURRENT')
 
 if (jospBuildVersion!=jospDependenciesVersion)
     logger.warn("Warn: Builded JOSP Components do NOT depends to JOSP Components with the same version\n\t(building version: '$jospBuildVersion', dependencies version: '$jospDependenciesVersion'")

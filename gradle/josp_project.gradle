@@ -70,9 +70,7 @@ ext {
     set('artifactLicenceUrl', 'https://www.apache.org/licenses/LICENSE-2.0.txt')
 
     // Preset build modes for JOSP Project
-    //set('jospMode', ext.get('jospModes.DEV'))           // on first build, set jospDependenciesVersion=CURRENT
-    //set('jospMode', ext.get('jospModes.STAGE'))         // on first build, set jospDependenciesVersion=PREV
-    set('jospMode', ext.get('jospModes.RELEASE'))         // on first build, set jospDependenciesVersion=PREV
+    set('jospMode', ext.get('jospModes.RELEASE'))       // valid values: DEV, SNAPSHOT or RELEASE
 
     // Set true to enable private tasks (require $USER_HOME/.gradle/properties.gradle file)
     set('OVERRIDE_enablePrivate', false)
