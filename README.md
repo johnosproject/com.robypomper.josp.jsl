@@ -7,11 +7,11 @@ Into this repository are contained all sources for the JSL library from the
 **Artifact Group:** com.robypomper.josp<br />
 **Artifact Version:** 2.2.3
 
-[CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
+[README](README.md) | [SPECS](docs/specs.md) | [GUIDES](docs/guides.md) | [CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
 
 The JOSP Service Library is a simple software library that can be included into
-3rd party software and provide an easy access to the JOSP EcoSystem. After
-initialize the `JSL` instance, developers can list available objects and access
+3rd party software and provide easy access to the JOSP EcoSystem.<br/>
+After initialize the `JSL` instance, developers can list available objects and access
 them. This library support also the user authentication and all other features
 provided by a JOSP EcoSystem.
 
@@ -20,11 +20,11 @@ shell as a foreground cmdline application.
 
 ## Run
 
-This is a Java library and developers can include it into ttheir own software
-following the developers manual.
+This is a Java library and developers can include it into their own software
+following the [JSL initialization](docs/guides/jsl_init.md) guide.
 
 Moreover, this repository provides also a minimal JSL shell implementation for
-development and test purposes. The repository, ans then also the JSL Shell, are
+development and test purposes. The repository, and then also the JSL Shell, are
 configured using  the Gradle build system. So you can run the JSL Shell directly
 from the Gradle wrapper included into the sources.
 
