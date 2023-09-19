@@ -25,7 +25,16 @@ import com.robypomper.build.gradle.GradleBuildInfo
 import java.text.SimpleDateFormat
 
 /**
- * Project's artifacts' definitions from their sourceSets until their publications.
+ * Project's artifacts' definitions from their sourceSets until their publications. *
+ *
+ * Artifacts configured:
+ * - jospJSL: sourceSet.main
+ *
+ * Summary:
+ * - Sources configs
+ * - Runners Tasks
+ * - Publication configs
+ * - Utils methods
  */
 
 
@@ -205,7 +214,7 @@ JavaPublicationUtils.injectDependenciesToPom(pub_pom, pub_configs, true)
 static void doFirstArchiveBaseName(final org.gradle.jvm.tasks.Jar jarTask, String baseName) {
     jarTask.doFirst(new Action<Task>() {
         @Override
-        public void execute(Task task) {
+        void execute(Task task) {
             jarTask.setBaseName(baseName)
         }
     })
