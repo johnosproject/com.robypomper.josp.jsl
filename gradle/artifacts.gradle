@@ -48,6 +48,7 @@ dependencies {
     implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
+    runtimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
     runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
 
