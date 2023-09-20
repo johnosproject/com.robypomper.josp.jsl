@@ -68,7 +68,7 @@ jospBuildVersion += hasProperty('OVERRIDE_jospBuildClassifier')             // d
 
 def jospDependenciesVersion = hasProperty('OVERRIDE_jospDependenciesVersion')              // define versions current source code provide
         ? ext.get('OVERRIDE_jospDependenciesVersion')
-        : jospBuildVersion
+        : ext.get('jospVersions.CURRENT')
 
 if (jospBuildVersion!=jospDependenciesVersion)
     logger.warn("Warn: Builded JOSP Components do NOT depends to JOSP Components with the same version\n\t(building version: '$jospBuildVersion', dependencies version: '$jospDependenciesVersion'")
@@ -86,34 +86,6 @@ ext {
     set('version.build.jospJOD'       , jospBuildVersion)
     set('version.deps.jospJSL'        , jospDependenciesVersion)
     set('version.build.jospJSL'       , jospBuildVersion)
-
-    // JCP Commons
-    set('version.deps.jcpAPIsPublic'  , jospDependenciesVersion)
-    set('version.build.jcpAPIsPublic' , jospBuildVersion)
-    set('version.deps.jcpCommons'     , jospDependenciesVersion)
-    set('version.build.jcpCommons'    , jospBuildVersion)
-
-    // JCP DB
-    set('version.deps.jcpDB'          , jospDependenciesVersion)                // since v210
-    set('version.build.jcpDB'         , jospBuildVersion)
-    set('version.deps.jcpDBAPIs'      , jospDependenciesVersion)                // since v210
-    set('version.build.jcpDBAPIs'     , jospBuildVersion)
-    set('version.deps.jcpDBFE'        , jospDependenciesVersion)                // since v210
-    set('version.build.jcpDBFE'       , jospBuildVersion)
-
-    // JCP Services
-    set('version.deps.jcpService'     , jospDependenciesVersion)
-    set('version.build.jcpService'    , jospBuildVersion)
-    set('version.deps.jcpAPIs'        , jospDependenciesVersion)
-    set('version.build.jcpAPIs'       , jospBuildVersion)
-    set('version.deps.jcpGWs'         , jospDependenciesVersion)                // since v210
-    set('version.build.jcpGWs'        , jospBuildVersion)
-    set('version.deps.jcpJSLWebBridge'  , jospDependenciesVersion)              // since v210
-    set('version.build.jcpJSLWebBridge' , jospBuildVersion)
-    set('version.deps.jcpFE'          , jospDependenciesVersion)
-    set('version.build.jcpFE'         , jospBuildVersion)
-    set('version.deps.jcpAll'         , jospDependenciesVersion)                // since v210
-    set('version.build.jcpAll'        , jospBuildVersion)
 }
 //@formatter:on
 
@@ -124,23 +96,9 @@ ext {
 
 //@formatter:off
 ext {
-    set('version.SpringCloud'       , 'Hoxton.SR9')
-    set('version.tomcat'            , '9.0.30')
-    set('version.Keycloak'          , '14.0.0')
-    set('version.slf4j'             , '1.7.30')
-    set('version.apache.log4j'      , '2.13.1')
-    set('version.snakeyaml'         , '1.25')
-    set('version.scribejava'        , '6.9.0')
-    set('version.lombok'            , '1.18.12')
-    set('version.jakarta'           , '2.2.3')
-    set('version.hibernate'         , '5.4.10.Final')
-    set('version.jmdns'             , '3.5.5')
-    set('version.cli'               , '1.4')
-    set('version.cliche'            , '110413')
-    set('version.swagger'           , '1.5.21')
-    set('version.swaggerSpring'     , '2.9.2')
-    set('version.jackson'           , '2.10.2')
-    set('version.htmlcleaner'       , '2.24')
-    set('version.json-path'         , '2.4.0')
+    set('version.cli'                 , '1.5.0')
+    set('version.cliche'              , '110413')
+    set('version.slf4j'               , '2.0.9')
+    set('version.junit-jupiter'       , '5.10.0')
 }
 //@formatter:on

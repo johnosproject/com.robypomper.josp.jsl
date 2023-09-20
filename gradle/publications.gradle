@@ -1,0 +1,82 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Configuration for remote publication of JOSP Components.
+ *
+ * Those configs are active when enablePrivate build config is true.
+ *
+ * JOSP Components can be also published remotely. Depending on
+ * jospMode it can be published to the stage or to the release
+ * repository.
+ *
+ * For each publication it add the signing task and configure destination
+ * repository.
+ *
+ * <h2>Private configs</h2>
+ * To work properly this Gradle file require following configs on
+ * $USER/.gradle/gradle.properties file:
+ * <ul>
+ *     <li>sonatypeUser={jira_username}</li>
+ *     <li>sonatypePassword={jira_password}</li>
+ *     <li>signing.keyId={last 8-digit of the GPG key}</li>
+ *     <li>signing.password={passphrase of the GPG key}</li>
+ *     <li>signing.secretKeyRingFile={file containing the GPG key}</li>
+ * </ul>
+ */
+
+if (!hasProperty("enablePrivate"))
+    throw new GradleScriptException("Property 'enablePrivate.Releases' not set, aborting!", null)
+def enablePrivate = ext.get('enablePrivate')
+
+if (!hasProperty("projectArtifactsRepoUrl.Releases"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Releases' not set, aborting!", null)
+if (!hasProperty("projectArtifactsRepoUrl.Snapshots"))
+    throw new GradleScriptException("Property 'projectArtifactsRepoUrl.Snapshots' not set, aborting!", null)
+def repoUrl = ext.get('jospMode') == ext.get('jospModes.RELEASE')
+        ? ext.get("projectArtifactsRepoUrl.Releases")
+        : ext.get("projectArtifactsRepoUrl.Snapshots")
+
+
+if (enablePrivate) {
+
+    // -------------------
+    // Publication configs
+    // -------------------
+
+    publishing {
+
+        publications.each { pub ->
+            signing {
+                sign pub
+            }
+        }
+
+        repositories {
+            maven {
+                url = uri(repoUrl)
+                credentials {
+                    username project.sonatypeUser
+                    password project.sonatypePassword
+                }
+            }
+        }
+    }
+
+}   // if (ext.get(enablePrivate))

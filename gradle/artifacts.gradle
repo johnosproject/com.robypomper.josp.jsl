@@ -1,0 +1,550 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Project's artifacts' definitions from their sourceSets until their publications. *
+ *
+ * Artifacts configured:
+ * - jospJSL: sourceSet.main
+ *
+ * Summary:
+ * - Sources configs
+ * - Runners Tasks
+ * - Publication configs
+ * - Utils methods
+ */
+
+final String CLASSIFIER_DOC = "javadoc"
+final String CLASSIFIER_SRC = "sources"
+final String CLASSIFIER_DEP = "deps"
+final String CLASSIFIER_FAT = "fat"
+
+
+// ------------------
+// Sources configs
+// ------------------
+
+sourceSets {}
+
+configurations {}
+
+dependencies {
+    implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
+    implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
+    implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
+    runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
+}
+
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main, (String) project.ext.get("artifactVersion"))
+
+
+// -------------
+// Runners Tasks
+// -------------
+
+boolean overrideIfExist = false
+String FileConfigs_JSL = "src/main/configs/jsl_default.yml"
+String FileConfigs_Log4j2 = 'src/main/configs/log4j2/log4j2.xml'
+File WorkingDir = file("envs/runnables/jsl")
+String MainClass = !hasProperty('artifactMainClass')
+        ? null
+        : ext.get('artifactMainClass')
+
+tasks.run {
+    classpath(sourceSets.main.getRuntimeClasspath())
+
+    setWorkingDir(WorkingDir)
+    doFirst {
+        if (!WorkingDir.exists())
+            WorkingDir.mkdirs()
+    }
+
+    if (MainClass != null)
+        setMain(MainClass)
+
+    jvmArgs = [
+            //'-Dlog4j.configurationFile=' + project.file(FileConfigs_Log4j2).absolutePath,
+            //'-Djavax.net.debug=ssl',
+    ]
+    args = [
+            //'--configs', 'src/jospJOD/configs/jod_dev.yml',
+    ]
+
+    standardInput = System.in
+
+    doFirst {
+        if (WorkingDir.exists() && overrideIfExist)
+            delete WorkingDir
+
+        if (!WorkingDir.exists())
+            copy {
+                from FileConfigs_JSL
+                rename 'jsl(.+).yml', 'jsl.yml'
+                from FileConfigs_Log4j2
+                rename 'log4j2(.+).xml', 'log4j2.xml'
+                into "$WorkingDir"
+            }
+    }
+}
+
+tasks.clean.doFirst {
+    group 'JOSP cleaners'
+    delete WorkingDir
+}
+
+
+// -------------------
+// Publication configs
+// -------------------
+
+String pubName = ext.get('artifactLongName')
+String pubArtifact = ext.get('artifactName')
+String pubDescription = ext.get('artifactDescription')
+String pubGroupId = ext.get('artifactGroupId')
+String pubVersion = ext.get('artifactVersion')
+String pubUrl = ext.get('projectUrl')
+String pubGit = ext.get('projectGit')
+String pubGitUrl = ext.get('projectGitUrl')
+String pubLicence = ext.get('artifactLicence')
+String pubLicenceUrl = ext.get('artifactLicenceUrl')
+String pubMainClass = hasProperty('artifactMainClass') ? ext.get('artifactMainClass') : null
+SourceSet pubSourcesSet = sourceSets.main
+
+tasks.jar {
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.register("jarDeps", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = CLASSIFIER_DEP
+
+    List<File> fs = new ArrayList<>()
+    for (File f : pubSourcesSet.getRuntimeClasspath())
+        if (f.exists() && !f.isDirectory())
+            fs.add(f)
+    from(fs)
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.javadoc {
+    setTitle(String.format("%s JavaDocs", capitalizeName(pubName)))
+
+    FileCollection classPath = it.getClasspath()
+    classPath = classPath + pubSourcesSet.getRuntimeClasspath()
+    classPath = classPath + project.files(pubSourcesSet.getCompileClasspath().getFiles())
+    classPath = classPath + pubSourcesSet.getAnnotationProcessorPath()
+    setClasspath(classPath)
+
+    setFailOnError(false)
+
+    enabled = !project.ext.get("disableDocs")
+}
+
+tasks.register("jarDocs", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = CLASSIFIER_DOC
+
+    from(tasks.javadoc.getOutputs())
+
+    enabled = !project.ext.get("disableDocs")
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+tasks.register("jarSrc", org.gradle.jvm.tasks.Jar.class) {
+    setGroup(BasePlugin.BUILD_GROUP)
+    archiveBaseName = pubArtifact
+    archiveVersion = pubVersion
+    archiveClassifier = CLASSIFIER_SRC
+
+    from(pubSourcesSet.getAllSource())
+
+    getManifest().attributes(prepareManifestAttributes(pubSourcesSet, pubName, pubVersion, pubLicence, pubLicenceUrl, pubMainClass, ""))
+}
+
+publishing {
+    publications {
+        "$pubArtifact"(MavenPublication) {
+            groupId = pubGroupId
+            artifactId = pubArtifact
+            version = pubVersion
+
+            artifact jar
+            artifact jarDeps
+            artifact jarDocs
+            artifact jarSrc
+        }
+    }
+}
+
+def pub_pom = publishing.publications."$pubArtifact".getPom()
+initPom(pub_pom, pubName, pubDescription, pubUrl, pubGit, pubGitUrl, pubLicence, pubLicenceUrl)
+Configuration pub_configs = configurations.getByName(pubSourcesSet.getImplementationConfigurationName())
+injectDependenciesToPom(pub_pom, pub_configs, true)
+
+
+/**********************************************************************************************************************
+ **********************************************************************************************************************/
+
+// -------------
+// Utils methods
+// -------------
+
+import groovy.xml.QName
+import java.text.SimpleDateFormat
+
+static Map<String, String> prepareManifestAttributes(SourceSet sourceSet, String name, String version, String licence, String licenceUrl, String mainClass, String nameExtension) {
+    //@formatter:off
+    Map<String, String> res = new HashMap<>()
+    res.put("Implementation-Title"      , name + (nameExtension.isEmpty() ? "" : " - " + capitalizeName(nameExtension)))
+    res.put("Implementation-Version"    , version)
+    res.put("Implementation-Variant"    , (nameExtension.isEmpty() ? "default" : " - " + capitalizeName(nameExtension)))
+
+    res.put("Licence"                   , licence)
+    res.put("Licence-Url"               , licenceUrl)
+
+    if (mainClass != null)
+        res.put("Main-Class"            , mainClass)
+
+    res.put("Built-By"                  , System.getProperty("user.name"))
+    res.put("Build-Timestamp"           , new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()))
+    res.put("Created-By"                , String.format("Gradle %s", System.getProperty("gradle.gradleVersion}")))
+    res.put("Build-Jdk"                 , String.format("%s (%s %s)", System.getProperty("java.version"), System.getProperty("java.vendor"), System.getProperty("java.vm.version")))
+    res.put("Build-OS"                  , String.format("%s %s %s", System.getProperty("os.name"), System.getProperty("os.arch"), System.getProperty("os.version")))
+    StringBuilder classPath = new StringBuilder()
+    for (File f : sourceSet.getRuntimeClasspath().getFiles())
+        if (f.getName().endsWith(".jar"))
+            classPath.append(String.format("libs/%s ", f.getName()))
+    res.put("Class-Path"                , classPath.toString())
+
+    //res.put("Build-Revision"            : versioning.info.commit)
+    //@formatter:on
+    return res
+}
+
+static void initPom(MavenPom pom, String name, String description,
+                    String url, String urlGit, String urlGitRepo) {
+    initPom(pom, name, description, url, urlGit, urlGitRepo, null, null);
+}
+
+static void initPom(MavenPom pom, String name, String description,
+                    String url, String urlGit, String urlGitRepo,
+                    String licence, String urlLicence) {
+
+    pom.getName().set(name);
+    pom.getDescription().set(description);
+    pom.getUrl().set(url);
+
+    pom.licenses(new Action<MavenPomLicenseSpec>() {
+        @Override
+
+        public void execute(MavenPomLicenseSpec mavenPomLicenseSpec) {
+            mavenPomLicenseSpec.license(new Action<MavenPomLicense>() {
+                @Override
+                public void execute(MavenPomLicense mavenPomLicense) {
+                    if (licence != null) mavenPomLicense.getName().set(licence);
+                    if (urlLicence != null) mavenPomLicense.getUrl().set(urlLicence);
+                }
+            });
+        }
+    });
+
+    pom.developers(new Action<MavenPomDeveloperSpec>() {
+        @Override
+        public void execute(MavenPomDeveloperSpec mavenPomDeveloperSpec) {
+            mavenPomDeveloperSpec.developer(new Action<MavenPomDeveloper>() {
+                @Override
+                public void execute(MavenPomDeveloper mavenPomDeveloper) {
+                    mavenPomDeveloper.getId().set("robypomper");
+                    mavenPomDeveloper.getName().set("Roberto Pompermaier");
+                    mavenPomDeveloper.getEmail().set("robypomper@johnosproject.com");
+                }
+            });
+        }
+    });
+
+
+    pom.scm(mavenPomScm -> {
+        mavenPomScm.getConnection().set(String.format("scm:git:https://%s", urlGit));
+        mavenPomScm.getDeveloperConnection().set(String.format("scm:git:ssh://%s", urlGit));
+        mavenPomScm.getUrl().set(urlGitRepo);
+    });
+
+}
+
+static void injectDependenciesToPom(MavenPom pom, Configuration fromConfig, boolean preClean) {
+    pom.withXml(xmlProvider -> {
+        Node dependenciesNode = null;
+        try {
+            dependenciesNode = (Node) xmlProvider.asNode().getAt(new QName("dependencies")).get(0);
+        } catch (IndexOutOfBoundsException ignore) {
+        }
+        if (dependenciesNode == null) dependenciesNode = xmlProvider.asNode().appendNode(new QName("dependencies"));
+        final Node dependenciesNodeFinal = dependenciesNode;
+
+        if (preClean)
+            dependenciesNodeFinal.setValue("");
+
+        fromConfig.getAllDependencies().forEach(it -> {
+            if (it instanceof ExternalModuleDependency) {
+                Node dependencyNode = dependenciesNodeFinal.appendNode("dependency");
+                dependencyNode.appendNode("groupId", it.getGroup());
+                dependencyNode.appendNode("artifactId", it.getName());
+                dependencyNode.appendNode("version", it.getVersion());
+            }
+        });
+    });
+}
+
+static void clearAllDependenciesToPom(MavenPom pom) {
+    pom.withXml(xmlProvider -> {
+        Node dependenciesMngrNode = (Node) xmlProvider.asNode().getAt(new QName("dependencyManagement")).get(0);
+        if (dependenciesMngrNode == null)
+            dependenciesMngrNode = xmlProvider.asNode().appendNode(new QName("dependencyManagement"));
+
+        Node dependenciesNode = (Node) dependenciesMngrNode.getAt(new QName("dependencies")).get(0);
+        if (dependenciesNode == null) dependenciesNode = dependenciesMngrNode.appendNode(new QName("dependencies"));
+        final Node dependenciesNodeFinal = dependenciesNode;
+
+        dependenciesNodeFinal.setValue("");
+    });
+}
+
+static String capitalizeName(String str) {
+    return str.substring(0, 1).toUpperCase() + str.substring(1);
+}
+
+class GradleBuildInfo {
+
+    private static final String GENERATED_SOURCE_PATH = "%s/build/generated/sources/buildInfo/java/%s/%s";
+    private static final String GENERATED_RESOURCE_PATH = "%s/build/generated/resources/buildInfo/java/%s/%s";
+    private static final String CLASS_BUILD_INFO = "package com.robypomper;\n" +
+            "\n" +
+            "import com.fasterxml.jackson.databind.ObjectMapper;\n" +
+            "\n" +
+            "import java.io.IOException;\n" +
+            "import java.util.Date;\n" +
+            "import java.util.Map;\n" +
+            "import java.io.InputStream;\n" +
+            "\n" +
+            "public class BuildInfo {\n" +
+            "\n" +
+            "    public final static BuildInfo current = load();\n" +
+            "    \n" +
+            "    public String project;\n" +
+            "    public String sourceSet;\n" +
+            "    public String version;\n" +
+            "    public String versionBuild;\n" +
+            "    public Date buildTime;\n" +
+            "    public String javaVersion;\n" +
+            "    public String javaHome;\n" +
+            "    public String gradleVersion;\n" +
+            "    public String gitCommit;\n" +
+            "    public String gitCommitShort;\n" +
+            "    public String gitBranch;\n" +
+            "    public String user;\n" +
+            "    public String osName;\n" +
+            "    public String osVersion;\n" +
+            "    public String osArch;\n" +
+            "    public Map<String,String> extra;\n" +
+            "\n" +
+            "    private static BuildInfo load() {\n" +
+            "        InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(\"buildInfo.json\");\n" +
+            "        if (resource == null) {\n" +
+            "            throw new IllegalArgumentException(\"File 'buildInfo.json' not found\");\n" +
+            "        }\n" +
+            "\n" +
+            "        try {\n" +
+            "            ObjectMapper mapper = new ObjectMapper();\n" +
+            "            return mapper.readValue(resource, BuildInfo.class);\n" +
+            "        } catch (IOException e) {\n" +
+            "            throw new IllegalArgumentException(\"Error parsing file\", e);\n" +
+            "        }\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+    private static final String CLASS_TMPL = "package com.robypomper.%s;\n" +
+            "\n" +
+            "import com.fasterxml.jackson.databind.ObjectMapper;\n" +
+            "\n" +
+            "import com.robypomper.BuildInfo;\n" +
+            "import java.io.File;\n" +
+            "import java.io.IOException;\n" +
+            "import java.net.URL;\n" +
+            "import java.util.Map;\n" +
+            "\n" +
+            "public class BuildInfo%s extends BuildInfo {\n" +
+            "}\n";
+    private static final String RESOURCE_PROPERTY_TMPL = "    \"%s\": \"%s\",\n";
+    private static final String RESOURCE_EXTRA_TMPL = "        \"%s\": \"%s\",\n";
+    private static final String RESOURCE_EXTRAS_TMPL = "    \"extra\": {\n%s    }\n";
+    private static final String RESOURCE_TMPL = "{\n%s}";
+
+
+    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss, String version) {
+        makeBuildInfoForSourceSet(project, ss, version, null);
+    }
+
+    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss, String version, Map<String, Object> extraInfo) {
+        String genResourceCode = generateResource(project, ss, version, extraInfo);
+        try {
+            saveFile(new File(generatedResourcePath(project, ss, "buildInfo.json")), genResourceCode);
+            ss.getResources().srcDir(generatedResourcePath(project, ss, ""));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String genSourceCode = generateSourceCode(ss);
+
+        try {
+            saveFile(new File(generatedSourcePath(project, ss, "BuildInfo.java")), CLASS_BUILD_INFO);
+            saveFile(new File(generatedSourcePath(project, ss, String.format("BuildInfo%s.java", capitalizeName(ss.getName())))), genSourceCode);
+            ss.getJava().srcDir(generatedSourcePath(project, ss, ""));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String generatedSourcePath(Project project, SourceSet sourceSet, String fileName) {
+        return String.format(GENERATED_SOURCE_PATH, project.getProjectDir().getPath(), sourceSet.getName(), fileName);
+    }
+
+    private static String generatedResourcePath(Project project, SourceSet sourceSet, String fileName) {
+        return String.format(GENERATED_RESOURCE_PATH, project.getProjectDir().getPath(), sourceSet.getName(), fileName);
+    }
+
+    private static String generateResource(Project project, SourceSet ss, String version, Map<String, Object> extraInfo) {
+        String properties = "";
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "project", project.getName());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "sourceSet", ss.getName());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "version", version);
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "versionBuild", version + "-" + getBuildDate());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildTime", getCurrentDateTimeUTC());
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "buildTime", new Date());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "javaVersion", System.getProperty("java.specification.version"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "javaHome", System.getProperty("java.home").replace("\\", "\\\\"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gradleVersion", project.getGradle().getGradleVersion());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gitCommit", getGitCommit(project));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gitCommitShort", getGitCommitShort(project));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gitBranch", getGitBranch(project));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "user", System.getProperty("user.name"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "osName", System.getProperty("os.name"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osName", ManagementFactory.getOperatingSystemMXBean().getName());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "osVersion", System.getProperty("os.version"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osVersion", ManagementFactory.getOperatingSystemMXBean().getVersion());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "osArch", System.getProperty("os.arch"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osArch", ManagementFactory.getOperatingSystemMXBean().getArch());
+
+        if (extraInfo != null) {
+            StringBuilder extraProperties = new StringBuilder();
+            for (Map.Entry<String, Object> extraInfoEntity : extraInfo.entrySet())
+                extraProperties.append(String.format(RESOURCE_EXTRA_TMPL, extraInfoEntity.getKey(), extraInfoEntity.getValue().toString()));
+            String extraPropertiesStr = extraProperties.toString();
+            extraPropertiesStr = extraPropertiesStr.substring(0, extraPropertiesStr.length() - 2) + "\n";
+            properties += String.format(RESOURCE_EXTRAS_TMPL, extraPropertiesStr);
+        } else {
+            properties = properties.substring(0, properties.length() - 2) + "\n";
+        }
+
+        return String.format(RESOURCE_TMPL, properties);
+    }
+
+    private static String getCurrentDateTimeUTC() {
+        Date date = new Date();
+        SimpleDateFormat sdf_utc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        sdf_utc.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf_utc.format(date);
+    }
+
+    private static String getBuildDate() {
+        Date date = new Date();
+        SimpleDateFormat sdf_utc = new SimpleDateFormat("yyyyMMddHHmm");
+        sdf_utc.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf_utc.format(date);
+    }
+
+    private static String getGitCommit(Project project) {
+        try {
+            return execCmd("git rev-parse HEAD", project.getProjectDir());
+        } catch (IOException e) {
+            return "N/A";
+        }
+    }
+
+    private static String getGitCommitShort(Project project) {
+        try {
+            return execCmd("git rev-parse --short HEAD", project.getProjectDir());
+        } catch (IOException e) {
+            return "N/A";
+        }
+    }
+
+    private static String getGitBranch(Project project) {
+        try {
+            return execCmd("git rev-parse --abbrev-ref HEAD", project.getProjectDir());
+        } catch (IOException e) {
+            return "N/A";
+        }
+    }
+
+    private static String generateSourceCode(SourceSet ss) {
+        return String.format(CLASS_TMPL, ss.getName(), capitalizeName(ss.getName()));
+    }
+
+    private static void saveFile(File file, String genSourceCode) throws IOException {
+        if (!file.exists()) {
+            if (!file.getParentFile().exists())
+                file.getParentFile().mkdirs();
+            file.createNewFile();
+        } else {
+            file.delete();
+            file.createNewFile();
+        }
+
+        FileWriter myWriter = new FileWriter(file);
+        myWriter.write(genSourceCode);
+        myWriter.close();
+    }
+
+    private static String execCmd(String cmd, File workingDir) throws IOException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.directory(workingDir);
+        processBuilder.command("sh", "-c", cmd);
+        Process process = processBuilder.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        StringBuilder cmdOutput = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            cmdOutput.append(line);
+        }
+        return cmdOutput.toString();
+    }
+
+    static String capitalizeName(String str) {
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+}

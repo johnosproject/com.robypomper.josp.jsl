@@ -1,0 +1,60 @@
+/*******************************************************************************
+ * The John Operating System Project is the collection of software and configurations
+ * to generate IoT EcoSystem, like the John Operating System Platform one.
+ * Copyright (C) 2021 Roberto Pompermaier
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
+/**
+ * Gradle configurations to manage JOSP project's tests.
+ *
+ * Summary:
+ * - SourceSes configs
+ * - Tests Tasks
+ * - IntelliJ Modules
+ *
+ * This file configure and provide test tasks for all JOSP project's components:
+ * - JOSP Commons: communication tests
+ * - JOD: communication and structure tests
+ * - JSL: communication tests
+ *
+ * Component's test are organized by one sourceSets for each unit of the component
+ * (comm, struct, perms...) and this file provide specific and generic (All) tests
+ * tasks.
+ */
+
+
+// -----------------
+// SourceSes configs
+// -----------------
+
+sourceSets {}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:${project.ext.get("version.junit-jupiter")}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
+    testImplementation sourceSets.main.output
+    testImplementation sourceSets.main.runtimeClasspath
+}
+
+
+// -----------
+// Tests Tasks
+// -----------
+
+tasks.test {
+    useJUnitPlatform()
+}

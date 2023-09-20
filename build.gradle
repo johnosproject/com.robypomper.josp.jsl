@@ -18,32 +18,33 @@
  ******************************************************************************/
 
 plugins {
-    id 'com.avast.gradle.docker-compose' //version '0.10.9'
-    id 'org.springframework.boot' //version '2.2.4.RELEASE'                     version not required because specified in buildSrc/build.gradle
-    id 'io.spring.dependency-management' //version '1.0.9.RELEASE'              version not required because specified in buildSrc/build.gradle
-    id "com.github.node-gradle.node" // version "3.0.1"                         // for jcpFE Javascript resources only
     id 'java'
+    id 'application'
     id 'maven-publish'
     id 'signing'
-
-    id 'idea'
 }
+
 
 apply from: 'gradle/josp_definitions.gradle'
 apply from: 'gradle/josp_project.gradle'
 apply from: 'gradle/josp_versions.gradle'
+ext.set('artifactVersion', ext.get('version.build.jospJSL'))
+
 
 println "--------------------------"
-println "Building John O.S. Project"
+println "Building John O.S. Project - " + ext.get('artifactLongName')
 println "--------------------------"
 println "Mode:                  " + ext.get('jospMode')
 println "Project"
 println "- url:                 " + ext.get('projectUrl')
 println "- git:                 " + ext.get('projectGit')
 println "- git-url:             " + ext.get('projectGitUrl')
-println "JOSP Versions"
-println "- default:             " + ext.get('version.build.josp') + " / " + ext.get('version.deps.josp') + "          (Building / Required)"
-//println "- JOSP APIs            " + ext.get('version.build.jospAPIs') + " / " + ext.get('version.deps.jospAPIs')
+println "Artifact"
+println "- name:                " + ext.get('artifactLongName')
+println "- version:             " + ext.get('artifactVersion')
+println "JOSP Dependencies"
+println "- JOSP APIs            " + ext.get('version.deps.jospAPIs')
+println "- JOSP Commons         " + ext.get('version.deps.jospCommons')
 println "JOSP Build configs"
 println "- enablePrivate:       " + ext.get('enablePrivate')
 println "- disableDocs:         " + ext.get('disableDocs')
@@ -54,20 +55,9 @@ repositories {
     mavenLocal()
 }
 
-apply from: 'gradle/spring_support.gradle'
-apply from: 'gradle/node_configs.gradle'
 
-apply from: 'gradle/build_publications_repo_PRE.gradle'
-apply from: 'gradle/build_commons.gradle'
-apply from: 'gradle/build_dockers.gradle'
-apply from: 'gradle/build_josp.gradle'
-apply from: 'gradle/build_jospcloud.gradle'
-apply from: 'gradle/build_josp_platform.gradle'
-apply from: 'gradle/build_tests.gradle'
-apply from: 'gradle/build_publications_repo_POST.gradle'
-
-if (tasks.findByName("wrapper")==null)
-    task wrapper(type: Wrapper) {
-        gradleVersion = '6.8.2'
-        distributionType = Wrapper.DistributionType.ALL
-    }
+apply from: 'gradle/publications_repo.gradle'
+apply from: 'gradle/artifacts.gradle'
+apply from: 'gradle/tests.gradle'
+apply from: 'gradle/publications.gradle'
+apply from: 'gradle/wrapper.gradle'
