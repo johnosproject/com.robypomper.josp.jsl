@@ -48,6 +48,7 @@ dependencies {
     implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
+    runtimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
     runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
 
@@ -377,6 +378,7 @@ class GradleBuildInfo {
             "    public String OVERRIDE_jospDependenciesVersion;\n" +
             "    public String disableDocs;\n" +
             "    public String OVERRIDE_disableDocs;\n" +
+            "    public String jospDependenciesVersion_SameVersion;\n" +
             // build info
             "    public String buildVersion;\n" +
             "    public Date buildTime;\n" +
@@ -507,6 +509,7 @@ class GradleBuildInfo {
         properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_jospDependenciesVersion", getFromProject(project, "OVERRIDE_jospDependenciesVersion", ""))
         properties += String.format(RESOURCE_PROPERTY_TMPL, "disableDocs", getFromProject(project, "disableDocs", ""))
         properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_disableDocs", getFromProject(project, "OVERRIDE_disableDocs", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "jospDependenciesVersion_SameVersion", getFromProject(project, "jospDependenciesVersion_SameVersion", ""))
 
         // build
         properties += String.format(RESOURCE_PROPERTY_TMPL, "buildVersion", getFromProject(project, "artifactVersion", "") + "-" + getBuildDate());
