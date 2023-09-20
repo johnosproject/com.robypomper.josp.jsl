@@ -377,6 +377,7 @@ class GradleBuildInfo {
             "    public String OVERRIDE_jospDependenciesVersion;\n" +
             "    public String disableDocs;\n" +
             "    public String OVERRIDE_disableDocs;\n" +
+            "    public String jospDependenciesVersion_SameVersion;\n" +
             // build info
             "    public String buildVersion;\n" +
             "    public Date buildTime;\n" +
@@ -507,6 +508,7 @@ class GradleBuildInfo {
         properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_jospDependenciesVersion", getFromProject(project, "OVERRIDE_jospDependenciesVersion", ""))
         properties += String.format(RESOURCE_PROPERTY_TMPL, "disableDocs", getFromProject(project, "disableDocs", ""))
         properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_disableDocs", getFromProject(project, "OVERRIDE_disableDocs", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "jospDependenciesVersion_SameVersion", getFromProject(project, "jospDependenciesVersion_SameVersion", ""))
 
         // build
         properties += String.format(RESOURCE_PROPERTY_TMPL, "buildVersion", getFromProject(project, "artifactVersion", "") + "-" + getBuildDate());

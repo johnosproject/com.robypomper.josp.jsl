@@ -84,7 +84,12 @@ ext {
     // Customize version required for JOSP Components internal dependencies
     // (de-comment for first jospModes=DEV's build)
     //ext.set('OVERRIDE_jospDependenciesVersion',ext.get('jospVersions.CURRENT'))    // Default: jospBuildVersion
-    //ext.set('OVERRIDE_jospDependenciesVersion','2.2.3-DEV')                        // Default: jospBuildVersion
+    //ext.set('OVERRIDE_jospDependenciesVersion','2.2.4-DEV')                        // Default: jospBuildVersion
+
+    // Override version required for JOSP Components internal dependencies with
+    // current build version. It's more important than 'OVERRIDE_jospDependenciesVersion'
+    // (de-comment for first jospModes=DEV's build)
+    ext.set('jospDependenciesVersion_SameVersion',true)    // Default: false
 
     // PROJECT BUILD CONFIGURATIONS - END
 
