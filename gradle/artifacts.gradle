@@ -51,7 +51,7 @@ dependencies {
     runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
 
-GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main, (String) project.ext.get("artifactVersion"))
+GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main)
 
 
 // -------------
@@ -342,62 +342,76 @@ class GradleBuildInfo {
 
     private static final String GENERATED_SOURCE_PATH = "%s/build/generated/sources/buildInfo/java/%s/%s";
     private static final String GENERATED_RESOURCE_PATH = "%s/build/generated/resources/buildInfo/java/%s/%s";
-    private static final String CLASS_BUILD_INFO = "package com.robypomper;\n" +
+    private static final String CLASS_TMPL = "package com.robypomper.%s;\n" +
             "\n" +
+            "import java.io.File;\n" +
+            "import java.io.InputStream;\n" +
+            "import java.io.IOException;\n" +
+            "import java.net.URL;\n" +
+            "import java.util.Map;\n" +
+            "import java.util.Date;\n" +
             "import com.fasterxml.jackson.databind.ObjectMapper;\n" +
             "\n" +
-            "import java.io.IOException;\n" +
-            "import java.util.Date;\n" +
-            "import java.util.Map;\n" +
-            "import java.io.InputStream;\n" +
-            "\n" +
-            "public class BuildInfo {\n" +
-            "\n" +
-            "    public final static BuildInfo current = load();\n" +
+            "public class %s {\n" +
+            "    public final static %s current = load();\n" +
             "    \n" +
+            // project info
             "    public String project;\n" +
-            "    public String sourceSet;\n" +
+            "    public String url;\n" +
             "    public String version;\n" +
-            "    public String versionBuild;\n" +
+            // artifact info
+            "    public String artifactGroupId;\n" +
+            "    public String artifactName;\n" +
+            "    public String artifactVersion;\n" +
+            "    public String artifactLongName;\n" +
+            "    public String artifactDescription;\n" +
+            "    public String artifactMainClass;\n" +
+            "    public String artifactLicence;\n" +
+            "    public String artifactLicenceUrl;\n" +
+            // project configs
+            "    public String jospMode;\n" +
+            "    public String enablePrivate;\n" +
+            "    public String OVERRIDE_enablePrivate;\n" +
+            "    public String OVERRIDE_jospBuildVersion;\n" +
+            "    public String OVERRIDE_jospBuildClassifier;\n" +
+            "    public String OVERRIDE_jospDependenciesVersion;\n" +
+            "    public String disableDocs;\n" +
+            "    public String OVERRIDE_disableDocs;\n" +
+            // build info
+            "    public String buildVersion;\n" +
             "    public Date buildTime;\n" +
-            "    public String javaVersion;\n" +
-            "    public String javaHome;\n" +
-            "    public String gradleVersion;\n" +
+            "    public String buildJavaVersion;\n" +
+            "    public String buildJavaHome;\n" +
+            "    public String buildGradleVersion;\n" +
+            "    public String buildUser;\n" +
+            "    public String buildOsName;\n" +
+            "    public String buildOsVersion;\n" +
+            "    public String buildOsArch;\n" +
+            // git info
+            "    public String gitRepo;\n" +
+            "    public String gitUrl;\n" +
             "    public String gitCommit;\n" +
             "    public String gitCommitShort;\n" +
             "    public String gitBranch;\n" +
-            "    public String user;\n" +
-            "    public String osName;\n" +
-            "    public String osVersion;\n" +
-            "    public String osArch;\n" +
+            // extra info
+            "    public String buildInfoVersion = \"2\";\n" +
             "    public Map<String,String> extra;\n" +
             "\n" +
-            "    private static BuildInfo load() {\n" +
-            "        InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(\"buildInfo.json\");\n" +
+            "    private static %s load() {\n" +
+            "        String filePath = \"%s\";\n" +
+            "        InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);\n" +
             "        if (resource == null) {\n" +
-            "            throw new IllegalArgumentException(\"File 'buildInfo.json' not found\");\n" +
+            "            throw new IllegalArgumentException(\"File '\" + filePath + \"' not found\");\n" +
             "        }\n" +
             "\n" +
             "        try {\n" +
             "            ObjectMapper mapper = new ObjectMapper();\n" +
-            "            return mapper.readValue(resource, BuildInfo.class);\n" +
+            "            return mapper.readValue(resource, %s.class);\n" +
             "        } catch (IOException e) {\n" +
-            "            throw new IllegalArgumentException(\"Error parsing file\", e);\n" +
+            "            throw new IllegalArgumentException(\"Error parsing '\" + filePath + \"' file\", e);\n" +
             "        }\n" +
             "    }\n" +
             "\n" +
-            "}\n";
-    private static final String CLASS_TMPL = "package com.robypomper.%s;\n" +
-            "\n" +
-            "import com.fasterxml.jackson.databind.ObjectMapper;\n" +
-            "\n" +
-            "import com.robypomper.BuildInfo;\n" +
-            "import java.io.File;\n" +
-            "import java.io.IOException;\n" +
-            "import java.net.URL;\n" +
-            "import java.util.Map;\n" +
-            "\n" +
-            "public class BuildInfo%s extends BuildInfo {\n" +
             "}\n";
     private static final String RESOURCE_PROPERTY_TMPL = "    \"%s\": \"%s\",\n";
     private static final String RESOURCE_EXTRA_TMPL = "        \"%s\": \"%s\",\n";
@@ -405,58 +419,116 @@ class GradleBuildInfo {
     private static final String RESOURCE_TMPL = "{\n%s}";
 
 
-    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss, String version) {
-        makeBuildInfoForSourceSet(project, ss, version, null);
+    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss) {
+        makeBuildInfoForSourceSet(project, ss, null);
     }
 
-    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss, String version, Map<String, Object> extraInfo) {
-        String genResourceCode = generateResource(project, ss, version, extraInfo);
+    public static void makeBuildInfoForSourceSet(Project project, SourceSet ss, Map<String, Object> extraInfo) {
+        String genResourceCode = generateResource(project, ss, extraInfo);
         try {
-            saveFile(new File(generatedResourcePath(project, ss, "buildInfo.json")), genResourceCode);
+            saveFile(new File(generatedResourcePath(project, ss, generatedResourceFileName(project))), genResourceCode);
             ss.getResources().srcDir(generatedResourcePath(project, ss, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String genSourceCode = generateSourceCode(ss);
 
+        String genSourceCode = generateSourceCode(generatedSourceClassName(project), generatedPackageName(project), generatedResourceFileName(project));
         try {
-            saveFile(new File(generatedSourcePath(project, ss, "BuildInfo.java")), CLASS_BUILD_INFO);
-            saveFile(new File(generatedSourcePath(project, ss, String.format("BuildInfo%s.java", capitalizeName(ss.getName())))), genSourceCode);
+            //saveFile(new File(generatedSourcePath(project, ss, "BuildInfo.java")), CLASS_BUILD_INFO);
+            saveFile(new File(generatedSourcePath(project, ss, generatedSourceFileName(project))), genSourceCode);
             ss.getJava().srcDir(generatedSourcePath(project, ss, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // File names and paths
+
     private static String generatedSourcePath(Project project, SourceSet sourceSet, String fileName) {
         return String.format(GENERATED_SOURCE_PATH, project.getProjectDir().getPath(), sourceSet.getName(), fileName);
+    }
+
+    private static String generatedSourceFileName(Project project) {
+        String fileName = generatedSourceClassName(project) + ".java";
+        return fileName;
+    }
+
+    private static String generatedPackageName(Project project) {
+        String packageName = getFromProject(project, "artifactName", null).toLowerCase();
+        if (packageName.startsWithIgnoreCase("josp"))
+            packageName = packageName.replace("josp", "josp.");
+        return packageName;
+    }
+
+    private static String generatedSourceClassName(Project project) {
+        String className = "BuildInfo" + capitalizeName(getFromProject(project, "artifactName", null));
+        return className;
     }
 
     private static String generatedResourcePath(Project project, SourceSet sourceSet, String fileName) {
         return String.format(GENERATED_RESOURCE_PATH, project.getProjectDir().getPath(), sourceSet.getName(), fileName);
     }
 
-    private static String generateResource(Project project, SourceSet ss, String version, Map<String, Object> extraInfo) {
+    private static String generatedResourceFileName(Project project) {
+        String fileName = "buildInfo_" +
+                getFromProject(project, "artifactGroupId", null) + "_" +
+                getFromProject(project, "artifactName", null) + "_" +
+                getFromProject(project, "artifactVersion", null) +
+                ".json";
+        return fileName;
+    }
+
+    // Resources file
+
+    private static String generateResource(Project project, SourceSet ss, Map<String, Object> extraInfo) {
         String properties = "";
+
+        // project info
         properties += String.format(RESOURCE_PROPERTY_TMPL, "project", project.getName());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "sourceSet", ss.getName());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "version", version);
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "versionBuild", version + "-" + getBuildDate());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildTime", getCurrentDateTimeUTC());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "url", getFromProject(project, "projectUrl", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "version", getFromProject(project, "artifactVersion", ""))
+
+        // artifact info
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactGroupId", getFromProject(project, "artifactGroupId", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactName", getFromProject(project, "artifactName", null))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactVersion", getFromProject(project, "artifactVersion", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactLongName", getFromProject(project, "artifactLongName", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactDescription", getFromProject(project, "artifactDescription", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactMainClass", getFromProject(project, "artifactMainClass", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactLicence", getFromProject(project, "artifactLicence", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "artifactLicenceUrl", getFromProject(project, "artifactLicenceUrl", ""))
+
+        // project configs
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "jospMode", getFromProject(project, "jospMode", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "enablePrivate", getFromProject(project, "enablePrivate", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_enablePrivate", getFromProject(project, "OVERRIDE_enablePrivate", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_jospBuildVersion", getFromProject(project, "OVERRIDE_jospBuildVersion", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_jospBuildClassifier", getFromProject(project, "OVERRIDE_jospBuildClassifier", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_jospDependenciesVersion", getFromProject(project, "OVERRIDE_jospDependenciesVersion", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "disableDocs", getFromProject(project, "disableDocs", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "OVERRIDE_disableDocs", getFromProject(project, "OVERRIDE_disableDocs", ""))
+
+        // build
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildVersion", getFromProject(project, "artifactVersion", "") + "-" + getBuildDate());
         //properties += String.format(RESOURCE_PROPERTY_TMPL, "buildTime", new Date());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "javaVersion", System.getProperty("java.specification.version"));
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "javaHome", System.getProperty("java.home").replace("\\", "\\\\"));
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "gradleVersion", project.getGradle().getGradleVersion());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildTime", getCurrentDateTimeUTC());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildJavaVersion", System.getProperty("java.specification.version"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildJavaHome", System.getProperty("java.home").replace("\\", "\\\\"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildGradleVersion", project.getGradle().getGradleVersion());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildUser", System.getProperty("user.name"));
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsName", System.getProperty("os.name"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsName", ManagementFactory.getOperatingSystemMXBean().getName());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsVersion", System.getProperty("os.version"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsVersion", ManagementFactory.getOperatingSystemMXBean().getVersion());
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsArch", System.getProperty("os.arch"));
+        //properties += String.format(RESOURCE_PROPERTY_TMPL, "buildOsArch", ManagementFactory.getOperatingSystemMXBean().getArch());
+
+        // git info
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gitRepo", getFromProject(project, "projectGit", ""))
+        properties += String.format(RESOURCE_PROPERTY_TMPL, "gitUrl", getFromProject(project, "projectGitUrl", ""))
         properties += String.format(RESOURCE_PROPERTY_TMPL, "gitCommit", getGitCommit(project));
         properties += String.format(RESOURCE_PROPERTY_TMPL, "gitCommitShort", getGitCommitShort(project));
         properties += String.format(RESOURCE_PROPERTY_TMPL, "gitBranch", getGitBranch(project));
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "user", System.getProperty("user.name"));
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "osName", System.getProperty("os.name"));
-        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osName", ManagementFactory.getOperatingSystemMXBean().getName());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "osVersion", System.getProperty("os.version"));
-        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osVersion", ManagementFactory.getOperatingSystemMXBean().getVersion());
-        properties += String.format(RESOURCE_PROPERTY_TMPL, "osArch", System.getProperty("os.arch"));
-        //properties += String.format(RESOURCE_PROPERTY_TMPL, "osArch", ManagementFactory.getOperatingSystemMXBean().getArch());
 
         if (extraInfo != null) {
             StringBuilder extraProperties = new StringBuilder();
@@ -470,6 +542,15 @@ class GradleBuildInfo {
         }
 
         return String.format(RESOURCE_TMPL, properties);
+    }
+
+    private static String getFromProject(Project project, String prop, String default_value) {
+        if (!project.ext.has(prop))
+            if (default_value != null)
+                return default_value
+            else
+                throw new InvalidUserDataException(String.format("Missing mandatory project property: '%s', please update your Gradle configs.", prop))
+        return (String) project.ext.get(prop)
     }
 
     private static String getCurrentDateTimeUTC() {
@@ -510,8 +591,10 @@ class GradleBuildInfo {
         }
     }
 
-    private static String generateSourceCode(SourceSet ss) {
-        return String.format(CLASS_TMPL, ss.getName(), capitalizeName(ss.getName()));
+    // Source file
+
+    private static String generateSourceCode(String className, String packageName, String resourceFileName) {
+        return String.format(CLASS_TMPL, packageName, className, className, className, resourceFileName, className);
     }
 
     private static void saveFile(File file, String genSourceCode) throws IOException {
