@@ -101,7 +101,6 @@ ext {
     set('version.cli'                 , '1.5.0')
     set('version.cliche'              , '110413')
     set('version.apache.log4j'        , '2.20.0')
-    set('version.slf4j'               , '2.0.9')
     set('version.junit-jupiter'       , '5.10.0')
 }
 //@formatter:on

@@ -48,7 +48,7 @@ dependencies {
     implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
-    runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j2-impl:${project.ext.get("version.apache.log4j")}"
 }
 
 GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main)
@@ -60,7 +60,10 @@ GradleBuildInfo.makeBuildInfoForSourceSet(project, sourceSets.main)
 
 boolean overrideIfExist = false
 String FileConfigs_JSL = "src/main/configs/jsl_default.yml"
-String FileConfigs_Log4j2 = 'src/main/configs/log4j2/log4j2.xml'
+def log4j2_config_variant = ext.get('jospMode') == ext.get('jospModes.RELEASE')
+        ? "release"
+        : "dev"
+String FileConfigs_Log4j2 = "src/main/configs/log4j2/log4j2_${log4j2_config_variant}.xml"
 File WorkingDir = file("envs/runnables/jsl")
 String MainClass = !hasProperty('artifactMainClass')
         ? null
@@ -79,6 +82,7 @@ tasks.run {
         setMain(MainClass)
 
     jvmArgs = [
+            '-Dlog4j.configurationFile=' + "" + WorkingDir + "/log4j2.xml",
             //'-Dlog4j.configurationFile=' + project.file(FileConfigs_Log4j2).absolutePath,
             //'-Djavax.net.debug=ssl',
     ]
