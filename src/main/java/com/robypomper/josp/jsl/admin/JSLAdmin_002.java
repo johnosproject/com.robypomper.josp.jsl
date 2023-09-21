@@ -22,9 +22,8 @@ import com.robypomper.josp.clients.JCPAPIsClientSrv;
 import com.robypomper.josp.clients.JCPClient2;
 import com.robypomper.josp.jsl.JSLSettings_002;
 import com.robypomper.josp.jsl.user.JSLUserMngr;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -36,7 +35,7 @@ public class JSLAdmin_002 implements JSLAdmin {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLAdmin_002.class);
     private final JSLSettings_002 locSettings;
     private final JCPAPIsClientSrv jcpClient;
     private final JSLUserMngr userMngr;
@@ -49,7 +48,7 @@ public class JSLAdmin_002 implements JSLAdmin {
         this.jcpClient = jcpClient;
         this.userMngr = userMngr;
 
-        log.info(Mrk_JSL.JSL_INFO, "Initialized JSLAdmin instance");
+        log.info("Initialized JSLAdmin instance");
     }
 
 

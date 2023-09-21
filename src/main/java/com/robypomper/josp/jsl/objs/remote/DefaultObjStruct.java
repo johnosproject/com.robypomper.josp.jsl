@@ -27,9 +27,8 @@ import com.robypomper.josp.jsl.objs.history.HistoryCompStatus;
 import com.robypomper.josp.jsl.objs.structure.*;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjStruct.class);
     private JSLRoot root = null;
     private final List<RemoteObjectStructListener> listenersInfo = new ArrayList<>();
     private Map<JSLComponent, HistoryCompStatus> compsStatusHistory = new HashMap<>();
@@ -106,7 +105,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
             }
 
         } catch (JOSPProtocol.ParsingException | JSLRemoteObject.ParsingException e) {
-            log.warn(Mrk_JSL.JSL_OBJS_SUB, String.format("Error on processing ObjectStructure message '%s...' for '%s' object because %s", msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
+            log.warn(String.format("Error on processing ObjectStructure message '%s...' for '%s' object because %s", msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
             throw new RuntimeException(e);
         }
 
@@ -120,7 +119,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
         try {
             upd = JOSPProtocol.fromMsgToUpd(msg, AbsJSLState.getStateClasses());
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
+            log.warn(String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
             return false;
         }
         // search destination object/components
@@ -128,27 +127,27 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
         JSLComponent comp = DefaultJSLComponentPath.searchComponent(getStructure(), compPath);
 
         // forward update msg
-        log.trace(Mrk_JSL.JSL_COMM, String.format("Processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+        log.trace(String.format("Processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
         if (comp == null) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on processing update on '%s' component for '%s' object because component not found", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("Error on processing update on '%s' component for '%s' object because component not found", compPath.getString(), getRemote().getId()));
             return false;
         }
         if (!(comp instanceof JSLState)) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on processing update on '%s' component for '%s' object because component not a status component", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("Error on processing update on '%s' component for '%s' object because component not a status component", compPath.getString(), getRemote().getId()));
             return false;
         }
         JSLState stateComp = (JSLState) comp;
 
         // set object/component's update
         if (stateComp.updateStatus(upd)) {
-            log.info(Mrk_JSL.JSL_COMM, String.format("Updated status of '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+            log.info(String.format("Updated status of '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
 
         } else {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("Error on processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
             return false;
         }
 
-        log.debug(Mrk_JSL.JSL_COMM, String.format("Update '%s...' processed for '%s' object", msg.substring(0, Math.min(10, msg.length())), getRemote().getId()));
+        log.debug(String.format("Update '%s...' processed for '%s' object", msg.substring(0, Math.min(10, msg.length())), getRemote().getId()));
         return true;
     }
 
@@ -157,7 +156,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
         try {
             compPath = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_CompPath(msg);
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
+            log.warn(String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
             return false;
         }
         JSLComponent component = getComponent(compPath);

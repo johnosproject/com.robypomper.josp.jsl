@@ -35,9 +35,8 @@ import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.states.JSLLocalState;
 import com.robypomper.josp.states.StateException;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -51,7 +50,7 @@ public class JSLLocalClientsMngr {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLLocalClientsMngr.class);
     private final JavaEnum.Synchronizable<JSLLocalState> state = new JavaEnum.Synchronizable<>(JSLLocalState.STOP);
     // JSL
     private final JSL_002 jsl;
@@ -89,12 +88,12 @@ public class JSLLocalClientsMngr {
         // Init local service client and discovery
         String discoveryImpl = locSettings.getJSLDiscovery();
         try {
-            log.debug(Mrk_JSL.JSL_COMM, String.format("Creating discovery '%s' service for local object's servers", discoveryImpl));
+            log.debug(String.format("Creating discovery '%s' service for local object's servers", discoveryImpl));
             discover = DiscoverySystemFactory.createDiscover(discoveryImpl, JOSPProtocol.DISCOVERY_TYPE);
-            log.debug(Mrk_JSL.JSL_COMM, String.format("Discovery '%s' service created for local object's servers", discoveryImpl));
+            log.debug(String.format("Discovery '%s' service created for local object's servers", discoveryImpl));
 
         } catch (Discover.DiscoveryException e) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on creating discovery '%s' service for local object's servers because %s", discoveryImpl, e.getMessage()), e);
+            log.warn(String.format("Error on creating discovery '%s' service for local object's servers because %s", discoveryImpl, e.getMessage()), e);
             throw new JSLCommunication.LocalCommunicationException(String.format("Error on creating discovery '%s' service for local object's servers", discoveryImpl), e);
         }
     }
@@ -161,16 +160,16 @@ public class JSLLocalClientsMngr {
         assert state.enumEquals(JSLLocalState.STOP) :
                 "Method startDiscovering() can be called only from STOP state";
 
-        log.info(Mrk_JSL.JSL_COMM, String.format("Start local service's discovery '%s'", srvInfo.getSrvId()));
+        log.info(String.format("Start local service's discovery '%s'", srvInfo.getSrvId()));
 
         synchronized (state) {
             log.debug("Local Discovery state = STARTING");
             state.set(JSLLocalState.STARTING);
 
             discover.addListener(discoverListener);
-            log.debug(Mrk_JSL.JSL_COMM, "Starting local service's discovery");
+            log.debug("Starting local service's discovery");
             discover.start();
-            log.debug(Mrk_JSL.JSL_COMM, "Local service's discovery started");
+            log.debug("Local service's discovery started");
             lastStart = JavaDate.getNowDate();
             emit_LocalStarted();
 
@@ -183,20 +182,20 @@ public class JSLLocalClientsMngr {
         assert state.get().isRUN() :
                 "Method startDiscovering() can be called only from RUN_ state";
 
-        log.info(Mrk_JSL.JSL_COMM, String.format("Stop local communication service's discovery '%s' and disconnect local clients", srvInfo.getSrvId()));
+        log.info(String.format("Stop local communication service's discovery '%s' and disconnect local clients", srvInfo.getSrvId()));
 
         synchronized (state) {
             log.debug("Local Discovery state = SHOUTING");
             state.set(JSLLocalState.SHOUTING);
 
-            log.debug(Mrk_JSL.JSL_COMM, "Stopping local service's discovery");
+            log.debug("Stopping local service's discovery");
             discover.stop();
-            log.debug(Mrk_JSL.JSL_COMM, "Local service's discovery stopped");
+            log.debug("Local service's discovery stopped");
             discover.removeListener(discoverListener);
             lastStop = JavaDate.getNowDate();
             emit_LocalStopped();
 
-            log.debug(Mrk_JSL.JSL_COMM, "Disconnecting local communication service's clients");
+            log.debug("Disconnecting local communication service's clients");
             Set<JSLLocalClient> tmpList = new HashSet<>(localClients.keySet());
             for (JSLLocalClient locConn : tmpList)
                 if (locConn.getState().isConnected())
@@ -204,9 +203,9 @@ public class JSLLocalClientsMngr {
                         locConn.disconnect();
 
                     } catch (PeerDisconnectionException e) {
-                        log.warn(Mrk_JSL.JSL_COMM, String.format("Error on disconnecting to '%s' object on server '%s:%d' from '%s' service because %s", locConn.getRemoteId(), locConn.getConnectionInfo().getLocalInfo().getAddr().getHostAddress(), locConn.getConnectionInfo().getLocalInfo().getPort(), srvInfo.getSrvId(), e.getMessage()), e);
+                        log.warn(String.format("Error on disconnecting to '%s' object on server '%s:%d' from '%s' service because %s", locConn.getRemoteId(), locConn.getConnectionInfo().getLocalInfo().getAddr().getHostAddress(), locConn.getConnectionInfo().getLocalInfo().getPort(), srvInfo.getSrvId(), e.getMessage()), e);
                     }
-            log.debug(Mrk_JSL.JSL_COMM, "Local communication service's clients disconnected");
+            log.debug("Local communication service's clients disconnected");
 
             log.debug("Local Discovery state = STOP");
             state.set(JSLLocalState.STOP);
@@ -343,12 +342,12 @@ public class JSLLocalClientsMngr {
         @Override
         public void onServiceDiscovered(DiscoveryService discSrv) {
             Thread.currentThread().setName("JSLDiscovery");
-            log.info(Mrk_JSL.JSL_COMM, String.format("Discover object's service '%s' at '%s:%d' on '%s' interface by '%s' service", discSrv.name, discSrv.address, discSrv.port, discSrv.intf, srvInfo.getSrvId()));
+            log.info(String.format("Discover object's service '%s' at '%s:%d' on '%s' interface by '%s' service", discSrv.name, discSrv.address, discSrv.port, discSrv.intf, srvInfo.getSrvId()));
             localDiscovered.put(discSrv, true);
 
             // Check if discovered service is at localhost (if check enabled)
             if (locSettings.getLocalOnlyLocalhost() && !discSrv.address.isLoopbackAddress()) {
-                log.warn(Mrk_JSL.JSL_COMM, String.format("Object's service '%s' at '%s:%d' use not Localhost address then discarded", discSrv.name, discSrv.address, discSrv.port));
+                log.warn(String.format("Object's service '%s' at '%s:%d' use not Localhost address then discarded", discSrv.name, discSrv.address, discSrv.port));
                 return;
             }
 
@@ -358,7 +357,7 @@ public class JSLLocalClientsMngr {
                 locConn = createAndConnectClient(discSrv);
 
             } catch (PeerConnectionException e) {
-                log.warn(Mrk_JSL.JSL_COMM, String.format("Error connecting on discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
+                log.warn(String.format("Error connecting on discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
                 return;
             }
             localClients.put(locConn, false);
@@ -375,12 +374,12 @@ public class JSLLocalClientsMngr {
     };
 
     private JSLLocalClient createAndConnectClient(DiscoveryService discSrv) throws PeerConnectionException {
-        log.debug(Mrk_JSL.JSL_COMM, String.format("Connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
+        log.debug(String.format("Connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
 
         JSLLocalClient locConn = JSLLocalClient.instantiate(jslComm, this, srvInfo.getFullId(), discSrv.address, discSrv.port, discSrv.name);      // ToDo: Give also discSrv.interface, so client can bind right interface
         locConn.connect();
 
-        log.debug(Mrk_JSL.JSL_COMM, String.format("Service connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
+        log.debug(String.format("Service connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
 
         return locConn;
     }
@@ -526,7 +525,7 @@ public class JSLLocalClientsMngr {
     public void onClientDisconnected(JSLLocalClient client) {
         JSLRemoteObject rObj = jslObjsMngr.getByConnection(client);
         if (rObj != null) {
-            log.info(Mrk_JSL.JSL_COMM_SUB, String.format("Disconnected object '%s' server '%s:%d' by '%s' service", rObj.getId(), client.getConnectionInfo().getRemoteInfo().getAddr().getHostName(), client.getConnectionInfo().getRemoteInfo().getPort(), client.getLocalId()));
+            log.info(String.format("Disconnected object '%s' server '%s:%d' by '%s' service", rObj.getId(), client.getConnectionInfo().getRemoteInfo().getAddr().getHostName(), client.getConnectionInfo().getRemoteInfo().getPort(), client.getLocalId()));
             //if (client.getState().isCONNECTING())
             ((DefaultObjComm) rObj.getComm()).removeLocalClient(client);
         }

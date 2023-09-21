@@ -28,8 +28,8 @@ import com.robypomper.java.JavaSSL;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.protocol.JOSPProtocol;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetAddress;
@@ -53,7 +53,7 @@ public class JSLLocalClient extends ClientAbsSSL {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLLocalClient.class);
     private final JSLCommunication_002 communication;
     private final JSLLocalClientsMngr clientsMngr;
     private JSLRemoteObject remoteObject = null;
@@ -139,7 +139,7 @@ public class JSLLocalClient extends ClientAbsSSL {
 //     */
 //    @Override
 //    public void sendData(byte[] data) throws PeerStreamException, PeerNotConnectedException {
-//        log.info(Mrk_JSL.JSL_COMM_SUB, String.format("Data '%s...' send to object '%s' from '%s' service", new String(data).substring(0, new String(data).indexOf("\n")), getRemoteId(), getLocalId()));
+//        log.info(String.format("Data '%s...' send to object '%s' from '%s' service", new String(data).substring(0, new String(data).indexOf("\n")), getRemoteId(), getLocalId()));
 //        super.sendData(data);
 //    }
 
@@ -148,7 +148,7 @@ public class JSLLocalClient extends ClientAbsSSL {
 //     */
 //    @Override
 //    public void sendData(String data) throws PeerStreamException, PeerNotConnectedException {
-//        log.info(Mrk_JSL.JSL_COMM_SUB, String.format("Data '%s...' send to object '%s' from '%s' service", data.substring(0, data.indexOf("\n")), getRemoteId(), getLocalId()));
+//        log.info(String.format("Data '%s...' send to object '%s' from '%s' service", data.substring(0, data.indexOf("\n")), getRemoteId(), getLocalId()));
 //        super.sendData(data);
 //    }
 

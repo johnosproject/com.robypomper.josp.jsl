@@ -35,9 +35,8 @@ import com.robypomper.josp.jsl.user.JSLUserMngr_002;
 import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.states.StateException;
 import com.robypomper.josp.jsl.BuildInfoJospJSL;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 
@@ -52,7 +51,7 @@ public class JSL_002 extends AbsJSL {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSL_002.class);
 
 
     // Constructor
@@ -65,7 +64,7 @@ public class JSL_002 extends AbsJSL {
         log.info("\n\n" + JavaVersionUtils.buildJavaVersionStr("John Service Library", VERSION));
 
         String instanceId = Integer.toString(new Random().nextInt(MAX_INSTANCE_ID));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("Init JSL instance id '%s'", instanceId));
+        log.info(String.format("Init JSL instance id '%s'", instanceId));
 
         JCPAPIsClientSrv jcpClient = new JCPAPIsClientSrv(
                 settings.getJCPUseSSL(),
@@ -93,7 +92,7 @@ public class JSL_002 extends AbsJSL {
                     jcpClient.connect();
 
                 } catch (JCPClient2.AuthenticationException e) {
-                    log.warn(Mrk_JSL.JSL_MAIN, String.format("Error on user authentication to the JCP %s, retry", e.getMessage()), e);
+                    log.warn(String.format("Error on user authentication to the JCP %s, retry", e.getMessage()), e);
                     jcpClient.connect();
                 }
 

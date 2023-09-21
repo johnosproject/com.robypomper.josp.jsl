@@ -26,9 +26,8 @@ import com.robypomper.josp.jsl.comm.JSLLocalClient;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjComm.class);
     private final JSLCommunication communication;
     private boolean isCloudConnected = true;
     private final List<JSLLocalClient> localConnections = new ArrayList<>();
@@ -116,7 +115,7 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
      * @param newClient the client connected with corresponding JOD object.
      */
     public void addLocalClient(JSLLocalClient newClient) {
-        log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("Add new client '%s' to object '%s'", newClient.getRemoteId(), getRemote().getName()));
+        log.debug(String.format("Add new client '%s' to object '%s'", newClient.getRemoteId(), getRemote().getName()));
 
         boolean wasConnected = isLocalConnected();
         JSLLocalClient oldClient = null;
@@ -151,9 +150,9 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
 
             if (oldClient == null) {
                 localConnections.add(newClient);
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s' as backup client", newClient, getRemote().getName()));
+                log.debug(String.format("New client '%s' added to object '%s' as backup client", newClient, getRemote().getName()));
             } else
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' NOT added to object '%s' because client already know (%s)", newClient, getRemote().getName(), oldClient));
+                log.debug(String.format("New client '%s' NOT added to object '%s' because client already know (%s)", newClient, getRemote().getName(), oldClient));
 
         }
 
@@ -165,9 +164,9 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
             localConnections.add(newClient);
             if (oldClient != null) {
                 localConnections.remove(oldClient);
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s' and replace old client (%s)", newClient, getRemote().getName(), oldClient));
+                log.debug(String.format("New client '%s' added to object '%s' and replace old client (%s)", newClient, getRemote().getName(), oldClient));
             } else
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s'", newClient, getRemote().getName()));
+                log.debug(String.format("New client '%s' added to object '%s'", newClient, getRemote().getName()));
         }
 
         if (!wasConnected && isLocalConnected())

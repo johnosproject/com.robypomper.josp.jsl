@@ -27,9 +27,8 @@ import com.robypomper.josp.jsl.objs.structure.AbsJSLState;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.jsl.user.JSLUserMngr;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +42,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLObjsMngr_002.class);
     private final JSLSettings_002 locSettings;
     private final JSLServiceInfo srvInfo;
     private final List<JSLRemoteObject> objs = new ArrayList<>();
@@ -64,7 +63,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
         this.srvInfo = srvInfo;
         usrMngr.addUserListener(userListener);
 
-        log.info(Mrk_JSL.JSL_OBJS, "Initialized JSLObjsMngr");
+        log.info("Initialized JSLObjsMngr");
 
         AbsJSLState.loadAllStateClasses();
     }
@@ -122,7 +121,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      */
     @Override
     public List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern) {
-        log.warn(Mrk_JSL.JSL_OBJS, "Method searchObjects(...) not implemented, return empty objects list");
+        log.warn("Method searchObjects(...) not implemented, return empty objects list");
         return new ArrayList<>();
     }
 
@@ -155,14 +154,14 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
         synchronized (objs) {
             remObj = getById(locConnObjId);
             if (remObj == null) {
-                log.info(Mrk_JSL.JSL_OBJS, String.format("Register new local object '%s' and add connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
+                log.info(String.format("Register new local object '%s' and add connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
                 remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, serverConnection, communication);
                 objs.add(remObj);
                 remObj.getPerms().addListener(objectPermsListener);
                 emit_ObjAdded(remObj);
 
             } else {
-                log.info(Mrk_JSL.JSL_OBJS, String.format("Add object '%s' connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
+                log.info(String.format("Add object '%s' connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
                 ((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
             }
         }
@@ -175,7 +174,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      */
     @Override
     public boolean removeConnection(JSLLocalClient client) {
-        log.warn(Mrk_JSL.JSL_OBJS, "Method removeConnection(...) not implemented, return false");
+        log.warn("Method removeConnection(...) not implemented, return false");
         return false;
     }
 
@@ -193,7 +192,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
     @Override
     public void addCloudObject(String objId) {
         assert getById(objId) == null;
-        log.info(Mrk_JSL.JSL_OBJS, String.format("Register new cloud object '%s' to '%s' service", objId, srvInfo.getSrvId()));
+        log.info(String.format("Register new cloud object '%s' to '%s' service", objId, srvInfo.getSrvId()));
         JSLRemoteObject remObj = new DefaultJSLRemoteObject(srvInfo, objId, communication);
         objs.add(remObj);
         remObj.getPerms().addListener(objectPermsListener);

@@ -48,7 +48,6 @@ dependencies {
     implementation "com.robypomper.josp:jospCommons:${project.ext.get("version.deps.jospCommons")}"
     implementation "commons-cli:commons-cli:${project.ext.get("version.cli")}"
     implementation "com.googlecode.clichemaven:cliche:${project.ext.get("version.cliche")}"
-    runtimeOnly "org.apache.logging.log4j:log4j-core:${project.ext.get("version.apache.log4j")}"
     runtimeOnly "org.slf4j:slf4j-nop:${project.ext.get("version.slf4j")}"
 }
 
@@ -241,6 +240,7 @@ static Map<String, String> prepareManifestAttributes(SourceSet sourceSet, String
         if (f.getName().endsWith(".jar"))
             classPath.append(String.format("libs/%s ", f.getName()))
     res.put("Class-Path"                , classPath.toString())
+    res.put("Multi-Release"             , "true")
 
     //res.put("Build-Revision"            : versioning.info.commit)
     //@formatter:on

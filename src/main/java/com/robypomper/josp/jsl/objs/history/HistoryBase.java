@@ -24,15 +24,14 @@ import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.objs.remote.DefaultObjComm;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class HistoryBase {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(HistoryBase.class);
     private final JSLRemoteObject remoteObject;
     private final JSLServiceInfo srvInfo;
 
@@ -73,7 +72,7 @@ public abstract class HistoryBase {
                 return;
 
             } catch (PeerNotConnectedException | PeerStreamException e) {
-                log.warn(Mrk_JSL.JSL_OBJS, String.format("Error on sending message '%s' to object (via local) because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
+                log.warn(String.format("Error on sending message '%s' to object (via local) because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
             }
         }
     }

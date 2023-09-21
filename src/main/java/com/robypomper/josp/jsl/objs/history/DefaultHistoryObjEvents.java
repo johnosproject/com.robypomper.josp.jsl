@@ -23,9 +23,8 @@ import com.robypomper.comm.exception.PeerStreamException;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
-import com.robypomper.log.Mrk_JOD;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultHistoryObjEvents.class);
     private final JSLRemoteObject obj;
     private final Map<Integer, EventsListener> listeners = new HashMap<>();
     private int reqCount = 0;
@@ -119,13 +118,13 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
             eventsHistory = JOSPProtocol_ObjectToService.getHistoryEventsMsg_HistoryStatus(msg);
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_EVENTS_REQ_NAME, e.getMessage()), e);
+            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_EVENTS_REQ_NAME, e.getMessage()), e);
             return false;
         }
 
         EventsListener l = listeners.get(Integer.parseInt(reqId));
         if (l == null) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
+            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
             return false;
         }
 

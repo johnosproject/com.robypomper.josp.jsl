@@ -23,8 +23,8 @@ import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.protocol.JOSPProtocol_ObjectToService;
 import com.robypomper.josp.protocol.JOSPProtocol_ServiceToObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class DefaultObjPerms extends ObjBase implements ObjPerms {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjPerms.class);
     private List<JOSPPerm> perms = new ArrayList<>();
     private final Map<JOSPPerm.Connection, JOSPPerm.Type> permTypes = new HashMap<>();
     private final List<RemoteObjectPermsListener> listenersInfo = new ArrayList<>();

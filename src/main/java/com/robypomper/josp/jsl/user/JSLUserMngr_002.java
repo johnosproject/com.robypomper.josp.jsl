@@ -29,9 +29,8 @@ import com.robypomper.josp.jsl.JSLSettings_002;
 import com.robypomper.josp.jsl.comm.JSLCommunication;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.states.StateException;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLUserMngr_002.class);
     private final JSLSettings_002 locSettings;
     private final JCPAPIsClientSrv jcpClient;
     private final Caller20 apiUsrsCaller;
@@ -68,21 +67,21 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
         apiUsrsCaller = new Caller20(jcpClient);
 
         if (jcpClient.isAuthCodeFlowEnabled()) {
-            log.trace(Mrk_JSL.JSL_USR, "Perform JSLUserMngr login");
+            log.trace("Perform JSLUserMngr login");
             if (jcpClient.isConnected())
                 onLogin(jcpClient);
             else
                 onLocalLogin();
         } else {
             onLogout(jcpClient);
-            log.trace(Mrk_JSL.JSL_USR, "Set JSLUserMngr with anonymous user");
+            log.trace("Set JSLUserMngr with anonymous user");
         }
 
-        log.debug(Mrk_JSL.JSL_USR, "Setting login manager to JCPClient");
+        log.debug("Setting login manager to JCPClient");
         this.jcpClient.addLoginListener(this);
-        log.debug(Mrk_JSL.JSL_USR, "Login manager set to JCPClient");
+        log.debug("Login manager set to JCPClient");
 
-        log.info(Mrk_JSL.JSL_USR, String.format("Initialized JSLUserMngr instance for '%s' user with '%s' id", getUsername(), getUserId()));
+        log.info(String.format("Initialized JSLUserMngr instance for '%s' user with '%s' id", getUsername(), getUserId()));
     }
 
 
@@ -189,7 +188,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
     @Override
     public void onLogin(JCPClient2 jcpClient2) {
         // Cache user's info
-        log.debug(Mrk_JSL.JSL_USR, "Caching user's info from JCP");
+        log.debug("Caching user's info from JCP");
         try {
             this.user = apiUsrsCaller.getCurrent();
             locSettings.setUsrId(getUserId());
@@ -199,12 +198,12 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
             jcpClient.setUserId(getUserId());
 
         } catch (JCPClient2.ConnectionException | JCPClient2.AuthenticationException | JCPClient2.ResponseException | JCPClient2.RequestException e) {
-            log.warn(Mrk_JSL.JSL_USR, String.format("Error on getting user id and name from JCP because %s", e.getMessage()), e);
-            log.trace(Mrk_JSL.JSL_USR, "Set anonymous user");
+            log.warn(String.format("Error on getting user id and name from JCP because %s", e.getMessage()), e);
+            log.trace("Set anonymous user");
             user = Params20.User.ANONYMOUS;
         }
 
-        log.info(Mrk_JSL.JSL_USR, String.format("Logged in user '%s' with id '%s'", getUsername(), getUserId()));
+        log.info(String.format("Logged in user '%s' with id '%s'", getUsername(), getUserId()));
         _emitLoggedIn_PreRestart();
 
         if (comm == null)
@@ -214,12 +213,12 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
             try {
                 comm.getCloudConnection().disconnect();
             } catch (PeerDisconnectionException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on shutdown cloud communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on shutdown cloud communication on updating user id because %s", e.getMessage()), e);
             }
             try {
                 comm.getCloudConnection().connect();
             } catch (PeerConnectionException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on starting cloud communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on starting cloud communication on updating user id because %s", e.getMessage()), e);
             }
         }
         if (comm.getLocalConnections().isRunning()) {
@@ -228,7 +227,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
                 comm.getLocalConnections().start();
 
             } catch (StateException | Discover.DiscoveryException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on restart local communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on restart local communication on updating user id because %s", e.getMessage()), e);
             }
         }
 
@@ -247,7 +246,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
         // Set JCP Client user id header
         jcpClient.setUserId(null);
 
-        log.info(Mrk_JSL.JSL_USR, String.format("Logged out user '%s' with id '%s'", loggedUsername, loggedUsrId));
+        log.info(String.format("Logged out user '%s' with id '%s'", loggedUsername, loggedUsrId));
         _emitLoggedOut_PreRestart();
 
         if (comm == null)
@@ -257,12 +256,12 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
             try {
                 comm.getCloudConnection().disconnect();
             } catch (PeerDisconnectionException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on shutdown cloud communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on shutdown cloud communication on updating user id because %s", e.getMessage()), e);
             }
             try {
                 comm.getCloudConnection().connect();
             } catch (PeerConnectionException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on starting cloud communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on starting cloud communication on updating user id because %s", e.getMessage()), e);
             }
         }
         if (comm.getLocalConnections().isRunning()) {
@@ -271,7 +270,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
                 comm.getLocalConnections().start();
 
             } catch (StateException | Discover.DiscoveryException e) {
-                log.warn(Mrk_JSL.JSL_USR, String.format("Error on restart local communication on updating user id because %s", e.getMessage()), e);
+                log.warn(String.format("Error on restart local communication on updating user id because %s", e.getMessage()), e);
             }
         }
 
@@ -288,7 +287,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
      */
     private void onLocalLogin() {
         // Cache user's info
-        log.debug(Mrk_JSL.JSL_USR, "Set user's info from settings");
+        log.debug("Set user's info from settings");
         user = new Params20.User();
         user.usrId = locSettings.getUsrId();
         user.username = locSettings.getUsrName();
@@ -296,7 +295,7 @@ public class JSLUserMngr_002 implements JSLUserMngr, JCPClient2.LoginListener {
         // Set JCP Client user id header
         jcpClient.setUserId(user.usrId);
 
-        log.info(Mrk_JSL.JSL_USR, String.format("Logged in user '%s' with id '%s'", user.username, user.usrId));
+        log.info(String.format("Logged in user '%s' with id '%s'", user.username, user.usrId));
 
         _emitLoggedIn();
     }
