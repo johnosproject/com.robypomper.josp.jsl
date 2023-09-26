@@ -528,13 +528,45 @@ public class JSLLocalClientsMngr {
     }
 
     public void onClientDisconnected(JSLLocalClient client) {
+        log.debug(String.format("Connection '%s:%d' closed with reason '%s'", client.getConnectionInfo().getRemoteInfo().getAddr(), client.getConnectionInfo().getRemoteInfo().getPort(), client.getDisconnectionReason()));
+
         JSLRemoteObject rObj = jslObjsMngr.getByConnection(client);
-        if (rObj != null) {
-            log.info(String.format("Disconnected object '%s' server '%s:%d' by '%s' service", rObj.getId(), client.getConnectionInfo().getRemoteInfo().getAddr().getHostName(), client.getConnectionInfo().getRemoteInfo().getPort(), client.getLocalId()));
-            //if (client.getState().isCONNECTING())
-            ((DefaultObjComm) rObj.getComm()).removeLocalClient(client);
-        }
         localClients.remove(client);
+        if (rObj == null)
+            return;
+
+        ((DefaultObjComm) rObj.getComm()).removeLocalClient(client);
+        if (rObj.getComm().isLocalConnected()) {
+            log.info(String.format("Connection '%s:%d' closed but object '%s' still connected",
+                    client.getConnectionInfo().getRemoteInfo().getAddr(),
+                    client.getConnectionInfo().getRemoteInfo().getPort(),
+                    rObj.getName()));
+        } else {
+            log.info(String.format("Connection '%s:%d' closed for object '%s', check backups connections",
+                    client.getConnectionInfo().getRemoteInfo().getAddr(),
+                    client.getConnectionInfo().getRemoteInfo().getPort(),
+                    rObj.getName()));
+            List<JSLLocalClient> objClients = ((DefaultObjComm) rObj.getComm()).getLocalClients();
+            for (JSLLocalClient obCli : objClients) {
+                try {
+                    obCli.connect();
+                    break;
+                } catch (PeerConnectionException e) {
+                    log.debug(String.format("Object re-connection '%s:%d' attempt for object '%s' failed because [%s] %s",
+                            obCli.getConnectionInfo().getRemoteInfo().getAddr(),
+                            obCli.getConnectionInfo().getRemoteInfo().getPort(),
+                            rObj.getName(), e.getClass().getSimpleName(), e));
+                }
+            }
+            if (rObj.getComm().isLocalConnected())
+                log.info(String.format("Object '%s' switched connection to '%s:%d'",
+                        rObj.getName(),
+                        ((DefaultObjComm) rObj.getComm()).getConnectedLocalClient().getConnectionInfo().getRemoteInfo().getAddr(),
+                        ((DefaultObjComm) rObj.getComm()).getConnectedLocalClient().getConnectionInfo().getRemoteInfo().getPort()));
+            else
+                log.info(String.format("Object '%s' disconnected locally because no more connections available", rObj.getName()));
+        }
+
 
         emit_LocalDisconnected(rObj, client);
     }
