@@ -115,18 +115,13 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
      * @param newClient the client connected with corresponding JOD object.
      */
     public void addLocalClient(JSLLocalClient newClient) {
-        log.debug(String.format("Add new client '%s' to object '%s'", newClient.getRemoteId(), getRemote().getName()));
+        String newClientAddress = String.format("%s:%d", newClient.getSocket().getLocalAddress(), newClient.getSocket().getLocalPort());
+        log.debug(String.format("Add new client's connection '%s' to object '%s' (%s)",
+                newClientAddress, getRemote().getName(), getRemote().getId()));
 
-        boolean wasConnected = isLocalConnected();
         JSLLocalClient oldClient = null;
         for (JSLLocalClient cl : localConnections) {
-            if (
-                // Check remote address and port
-                    cl.getConnectionInfo().getRemoteInfo().getAddr() == newClient.getConnectionInfo().getRemoteInfo().getAddr()
-                            && cl.getConnectionInfo().getRemoteInfo().getPort().intValue() == newClient.getConnectionInfo().getRemoteInfo().getPort().intValue()
-                            // Check local address
-                            && cl.getConnectionInfo().getLocalInfo().getAddr() == newClient.getConnectionInfo().getLocalInfo().getAddr()
-            ) {
+            if (cl.getRemoteId().compareTo(newClient.getRemoteId()) == 0) {
                 oldClient = cl;
                 break;
             }
@@ -137,36 +132,27 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
         } catch (IllegalArgumentException ignore) {
         }
 
-        // If object already connected
-        //   Disconnect new client
-        //   If client NOT already know
-        //     Add new client to object's clients
-        if (wasConnected) {
-            JavaThreads.softSleep(100);         // Force switch thread, to allow starting client's thread
-            try {
-                newClient.disconnect();
-            } catch (PeerDisconnectionException ignore) {
-            }
-
-            if (oldClient == null) {
-                localConnections.add(newClient);
-                log.debug(String.format("New client '%s' added to object '%s' as backup client", newClient, getRemote().getName()));
-            } else
-                log.debug(String.format("New client '%s' NOT added to object '%s' because client already know (%s)", newClient, getRemote().getName(), oldClient));
-
-        }
-
-        // If object NOT connected
-        //   Add new client to object's clients
-        //   If client already know
-        //     Remove old Client from object's clients
-        if (!wasConnected) {
+        boolean wasConnected = isLocalConnected();
+        if (oldClient == null) {
             localConnections.add(newClient);
-            if (oldClient != null) {
+            log.info(String.format("Added connection '%s' to new local object '%s' (%s)",
+                    newClientAddress, getRemote().getName(), getRemote().getId()));
+        } else {
+            if (!wasConnected) {
                 localConnections.remove(oldClient);
-                log.debug(String.format("New client '%s' added to object '%s' and replace old client (%s)", newClient, getRemote().getName(), oldClient));
-            } else
-                log.debug(String.format("New client '%s' added to object '%s'", newClient, getRemote().getName()));
+                localConnections.add(newClient);
+                log.info(String.format("Replaced connection '%s' to object '%s' (%s)",
+                        newClientAddress, getRemote().getName(), getRemote().getId()));
+            } else {
+                JavaThreads.softSleep(100);         // Force switch thread, to allow starting client's thread
+                try {
+                    newClient.disconnect();
+                } catch (PeerDisconnectionException ignore) {
+                }
+                localConnections.add(newClient);
+                log.info(String.format("Added backup connection '%s' to object '%s' (%s)",
+                        newClientAddress, getRemote().getName(), getRemote().getId()));
+            }
         }
 
         if (!wasConnected && isLocalConnected())
