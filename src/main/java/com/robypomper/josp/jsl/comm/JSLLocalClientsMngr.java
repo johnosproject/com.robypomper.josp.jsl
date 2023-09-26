@@ -517,7 +517,12 @@ public class JSLLocalClientsMngr {
     }
 
     public void onClientConnectionError(JSLLocalClient client, Throwable e) {
-        localClients.remove(client);
+        log.debug(String.format("Error on '%s' connection: [%s] '%s'",
+                client, e.getClass().getSimpleName(), e));
+
+        JSLRemoteObject rObj = jslObjsMngr.getByConnection(client);
+        // TODO: analyze the error and print adeguate logging message
+        log.warn(String.format("Error on '%s' connection: [%s]", client, rObj));
 
         emit_LocalConnectionError(client, e);
     }
