@@ -82,9 +82,9 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
 
         if (localClient!=null) {
             objComm.addLocalClient(localClient);
-            log.info(String.format("Initialized JSLRemoteObject '%s' on '%s' service (via direct connection: '%s')", objId, srvInfo.getSrvId(), localClient.getConnectionInfo()));
+            log.info(String.format("Initialized JSLRemoteObject '%s' (%s) on '%s' service (via direct connection: '%s')", objInfo.getName(), objId, srvInfo.getSrvId(), localClient.getConnectionInfo()));
         } else
-            log.info(String.format("Initialized JSLRemoteObject '%s' on '%s' service (via cloud connection)", objId, srvInfo.getSrvId()));
+            log.info(String.format("Initialized JSLRemoteObject '%s' (%s)  on '%s' service (via cloud connection)", objInfo.getName(), objId, srvInfo.getSrvId()));
     }
 
 

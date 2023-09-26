@@ -92,7 +92,7 @@ public class JSLCommunication_002 implements JSLCommunication {
         String objId;
         try {
             objId = JOSPProtocol_ObjectToService.getObjId(msg);
-            log.info(String.format("Received '%s' message from %s (%s)", msg.substring(0, msg.indexOf('\n')), objId, connType == JOSPPerm.Connection.OnlyLocal ? "local connection" : "cloud connection"));
+            log.debug(String.format("Received '%s' message from %s (%s)", msg.substring(0, msg.indexOf('\n')), objId, connType == JOSPPerm.Connection.OnlyLocal ? "local connection" : "cloud connection"));
 
         } catch (JOSPProtocol.ParsingException e) {
             log.warn(String.format("Error on parsing '%s' message because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
@@ -119,7 +119,7 @@ public class JSLCommunication_002 implements JSLCommunication {
             if (!obj.processFromObjectMsg(msg, connType))
                 throw new Throwable(String.format("Unknown error on processing '%s' message", msg.substring(0, msg.indexOf('\n'))));
 
-            log.info(String.format("Message '%s' processed successfully", msg.substring(0, msg.indexOf('\n'))));
+            log.info(String.format("Message '%s' received from '%s' processed successfully", msg.substring(0, msg.indexOf('\n')), objId));
             return true;
 
         } catch (Throwable t) {
@@ -171,12 +171,15 @@ public class JSLCommunication_002 implements JSLCommunication {
 
         @Override
         public void onConnectionFailed(JCPClient2 jcpClient, Throwable t) {
-            if (connFailedPrinted) {
-                log.debug("Error on JCP APIs connection attempt");
-            } else {
-                log.warn("Error on JCP APIs connection attempt", t);
-                connFailedPrinted = true;
-            }
+            if (t instanceof JCPClient2.JCPNotReachableException) {
+                if (connFailedPrinted) {
+                    log.debug(String.format("JCP APIs at '%s' still unreachable", jcpClient.getAPIsUrl()));
+                } else {
+                    log.warn(String.format("Can't connect to JCP APIs at '%s', retry later", jcpClient.getAPIsUrl()));
+                    connFailedPrinted = true;
+                }
+            } else
+                log.warn(String.format("Error on JCP APIs connection attempt at '%s'", jcpClient.getAPIsUrl()), t);
         }
 
         @Override

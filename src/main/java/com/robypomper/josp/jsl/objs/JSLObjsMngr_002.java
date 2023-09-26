@@ -150,18 +150,17 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
 
         String locConnObjId = serverConnection.getRemoteId();
 
+        log.debug(String.format("Register object '%s' new connection (%s:%d) from '%s' service", locConnObjId, serverConnection.getSocket().getInetAddress(), serverConnection.getSocket().getPort(), srvInfo.getSrvId()));
         JSLRemoteObject remObj;
         synchronized (objs) {
             remObj = getById(locConnObjId);
             if (remObj == null) {
-                log.info(String.format("Register new local object '%s' and add connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
                 remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, serverConnection, communication);
                 objs.add(remObj);
                 remObj.getPerms().addListener(objectPermsListener);
                 emit_ObjAdded(remObj);
 
             } else {
-                log.info(String.format("Add object '%s' connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
                 ((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
             }
         }

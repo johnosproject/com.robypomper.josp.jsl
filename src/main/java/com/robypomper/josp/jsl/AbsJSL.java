@@ -200,57 +200,57 @@ public abstract class AbsJSL implements JSL {
 
     @Override
     public void printInstanceInfo() {
-        log.info("JSL Srv");
-        log.info(" -- IDs");
-        log.info("        JSL Srv");
-        log.info(String.format("            ID                = %s", srvInfo.getSrvId()));
-        log.info(String.format("            name              = %s", srvInfo.getSrvName()));
-        log.info("        User");
-        log.info(String.format("            ID                = %s", srvInfo.getUserId()));
-        log.info(String.format("            name              = %s", srvInfo.getUsername()));
-        log.info(" -- Ver.s");
-        log.info(String.format("    JSL Srv state             = %s", getState()));
-        log.info(String.format("    JSL Srv version           = %s", version()));
-        log.info(String.format("    JOSP JOD supported        = %s", Arrays.asList(versionsJOSPObject())));
-        log.info(String.format("    JOSP protocol supported   = %s", Arrays.asList(versionsJOSPProtocol())));
-        log.info(String.format("    JCP APIs supported        = %s", Arrays.asList(versionsJCPAPIs())));
-        log.info(" -- Comm.s");
-        log.info("        JCP APIs");
-        log.info(String.format("            State             = %s", comm.getCloudAPIs().getState()));
-        log.info(String.format("            Url               = %s", comm.getCloudAPIs().getAPIsUrl()));
-        log.info(String.format("            HostName          = %s", comm.getCloudAPIs().getAPIsHostname()));
-        log.info(String.format("            IsConnected       = %s", comm.getCloudAPIs().isConnected()));
-        log.info(String.format("            IsAuth            = %s", comm.getCloudAPIs().isUserAuthenticated()));
-        log.info(String.format("            LastConn          = %s", comm.getCloudAPIs().getLastConnection()));
-        log.info(String.format("            LastDiscon        = %s", comm.getCloudAPIs().getLastDisconnection()));
-        log.info("        Cloud Comm.");
-        log.info(String.format("            State (Client)    = %s", comm.getCloudConnection().getState()));
+        log.debug("                                     JSL Srv");
+        log.debug("                                     + -- IDs");
+        log.debug("                                     +        JSL Srv");
+        log.debug(String.format("                                     +            ID                = %s", srvInfo.getSrvId()));
+        log.debug(String.format("                                     +            name              = %s", srvInfo.getSrvName()));
+        log.debug("                                     +        User");
+        log.debug(String.format("                                     +            ID                = %s", srvInfo.getUserId()));
+        log.debug(String.format("                                     +            name              = %s", srvInfo.getUsername()));
+        log.debug("                                     + -- Ver.s");
+        log.debug(String.format("                                     +    JSL Srv state             = %s", getState()));
+        log.debug(String.format("                                     +    JSL Srv version           = %s", version()));
+        log.debug(String.format("                                     +    JOSP JOD supported        = %s", Arrays.asList(versionsJOSPObject())));
+        log.debug(String.format("                                     +    JOSP protocol supported   = %s", Arrays.asList(versionsJOSPProtocol())));
+        log.debug(String.format("                                     +    JCP APIs supported        = %s", Arrays.asList(versionsJCPAPIs())));
+        log.debug("                                     + -- Comm.s");
+        log.debug("                                     +        JCP APIs");
+        log.debug(String.format("                                     +            State             = %s", comm.getCloudAPIs().getState()));
+        log.debug(String.format("                                     +            Url               = %s", comm.getCloudAPIs().getAPIsUrl()));
+        log.debug(String.format("                                     +            HostName          = %s", comm.getCloudAPIs().getAPIsHostname()));
+        log.debug(String.format("                                     +            IsConnected       = %s", comm.getCloudAPIs().isConnected()));
+        log.debug(String.format("                                     +            IsAuth            = %s", comm.getCloudAPIs().isUserAuthenticated()));
+        log.debug(String.format("                                     +            LastConn          = %s", comm.getCloudAPIs().getLastConnection()));
+        log.debug(String.format("                                     +            LastDiscon        = %s", comm.getCloudAPIs().getLastDisconnection()));
+        log.debug("                                     +        Cloud Comm.");
+        log.debug(String.format("                                     +            State (Client)    = %s", comm.getCloudConnection().getState()));
         InetAddress cloudAddr = comm.getCloudConnection().getConnectionInfo().getRemoteInfo().getAddr();
         Integer cloudPort = comm.getCloudConnection().getConnectionInfo().getRemoteInfo().getPort();
-        log.info(String.format("            HostName          = %s", (cloudAddr != null ? cloudAddr.getHostName() : "N/A")));
-        log.info(String.format("            IPAddr            = %s", (cloudAddr != null ? cloudAddr.getHostAddress() : "N/A")));
-        log.info(String.format("            Port            = %s", (cloudPort != null ? cloudPort : "N/A")));
-        log.info(String.format("            IsConnected       = %s", comm.getCloudConnection().getState().isConnected()));
-        log.info(String.format("            LastConn          = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastConnection()));
-        log.info(String.format("            LastDiscon        = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastDisconnection()));
-        log.info(String.format("            LastDisconReason  = %s", comm.getCloudConnection().getDisconnectionReason()));
-        log.info("        Local Comm.");
-        log.info(String.format("            State (ClientMngr)= %s", comm.getLocalConnections().getState()));
-        log.info(String.format("            IsRunning         = %s", comm.getLocalConnections().isRunning()));
-        log.info(String.format("            ClientsCount      = %d", comm.getLocalConnections().getLocalClients().size()));
-        log.info(String.format("            ClientsConn       = %d", comm.getLocalConnections().getConnectedCount()));
-        log.info(String.format("            ClientsDisconn    = %d", comm.getLocalConnections().getDisconnectedCount()));
-        log.info(String.format("            LastStart         = %s", comm.getLocalConnections().getLastStartup()));
-        log.info(String.format("            LastStop          = %s", comm.getLocalConnections().getLastShutdown()));
-        log.info(String.format("            LastConn          = %s", comm.getLocalConnections().getLastObjConnection()));
-        log.info(String.format("            LastDisconn       = %s", comm.getLocalConnections().getLastObjDisconnection()));
+        log.debug(String.format("                                     +            HostName          = %s", (cloudAddr != null ? cloudAddr.getHostName() : "N/A")));
+        log.debug(String.format("                                     +            IPAddr            = %s", (cloudAddr != null ? cloudAddr.getHostAddress() : "N/A")));
+        log.debug(String.format("                                     +            Port            = %s", (cloudPort != null ? cloudPort : "N/A")));
+        log.debug(String.format("                                     +            IsConnected       = %s", comm.getCloudConnection().getState().isConnected()));
+        log.debug(String.format("                                     +            LastConn          = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastConnection()));
+        log.debug(String.format("                                     +            LastDiscon        = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastDisconnection()));
+        log.debug(String.format("                                     +            LastDisconReason  = %s", comm.getCloudConnection().getDisconnectionReason()));
+        log.debug("                                     +        Local Comm.");
+        log.debug(String.format("                                     +            State (ClientMngr)= %s", comm.getLocalConnections().getState()));
+        log.debug(String.format("                                     +            IsRunning         = %s", comm.getLocalConnections().isRunning()));
+        log.debug(String.format("                                     +            ClientsCount      = %d", comm.getLocalConnections().getLocalClients().size()));
+        log.debug(String.format("                                     +            ClientsConn       = %d", comm.getLocalConnections().getConnectedCount()));
+        log.debug(String.format("                                     +            ClientsDisconn    = %d", comm.getLocalConnections().getDisconnectedCount()));
+        log.debug(String.format("                                     +            LastStart         = %s", comm.getLocalConnections().getLastStartup()));
+        log.debug(String.format("                                     +            LastStop          = %s", comm.getLocalConnections().getLastShutdown()));
+        log.debug(String.format("                                     +            LastConn          = %s", comm.getLocalConnections().getLastObjConnection()));
+        log.debug(String.format("                                     +            LastDisconn       = %s", comm.getLocalConnections().getLastObjDisconnection()));
         List<JSLRemoteObject> objsList = objs.getAllObjects();
         StringBuilder objNames = new StringBuilder();
         for (JSLRemoteObject ro : objsList)
             objNames.append(ro.getName()).append(", ");
-        log.info(" -- Objs Mngr");
-        log.info(String.format("        Count                 = %s", objsList.size()));
-        log.info(String.format("        List                  = %s", objNames));
+        log.debug("                                     + -- Objs Mngr");
+        log.debug(String.format("                                     +        Count                 = %s", objsList.size()));
+        log.debug(String.format("                                     +        List                  = %s", objNames));
     }
 
     private void startupInstance() {
@@ -273,12 +273,15 @@ public abstract class AbsJSL implements JSL {
 
             try {
                 boolean startCloud = ((JSLSettings_002) settings).getCloudEnabled();
-                log.info(String.format("JCP GWs client %s", startCloud ? "enabled" : "disabled"));
+                log.info(String.format("JCP GWs client %s by settings", startCloud ? "enabled" : "disabled"));
                 if (startCloud)
                     comm.getCloudConnection().connect();
 
             } catch (PeerConnectionException e) {
-                log.warn("JCP GWs client not connected, retry later", e);
+                if (!comm.getCloudAPIs().isConnected())
+                    log.warn("Can't connect GWs client because JCP API not available, retry when JCP API become reachable");
+                else
+                    log.warn("JCP GWs client not connected, retry later", e);
             }
 
             if (state.enumNotEquals(JSLState.RESTARTING))
