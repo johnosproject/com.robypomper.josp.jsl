@@ -18,6 +18,7 @@
 
 package com.robypomper.josp.jsl;
 
+import com.robypomper.java.JavaThreads;
 import com.robypomper.java.JavaVersionUtils;
 import com.robypomper.josp.clients.JCPAPIsClientSrv;
 import com.robypomper.josp.clients.JCPClient2;
@@ -66,39 +67,7 @@ public class JSL_002 extends AbsJSL {
         String instanceId = Integer.toString(new Random().nextInt(MAX_INSTANCE_ID));
         log.info(String.format("Init JSL instance id '%s'", instanceId));
 
-        JCPAPIsClientSrv jcpClient = new JCPAPIsClientSrv(
-                settings.getJCPUseSSL(),
-                settings.getJCPId(),
-                settings.getJCPSecret(),
-                settings.getJCPUrlAPIs(),
-                settings.getJCPUrlAuth(),
-                settings.getJCPCallback(),
-                settings.getJCPAuthCodeRefreshToken()) {
-
-            @Override
-            protected void storeTokens() {
-                // Store refresh tokens
-                if (isClientCredentialFlowEnabled())
-                    settings.setJCPAuthCodeRefreshToken(null);
-                if (isAuthCodeFlowEnabled())
-                    settings.setJCPAuthCodeRefreshToken(getAuthCodeRefreshToken());
-            }
-
-        };
-
-        if (settings.getJCPConnect())
-            try {
-                try {
-                    jcpClient.connect();
-
-                } catch (JCPClient2.AuthenticationException e) {
-                    log.warn(String.format("Error on user authentication to the JCP %s, retry", e.getMessage()), e);
-                    jcpClient.connect();
-                }
-
-            } catch (StateException e) {
-                assert false : "Exception StateException can't be thrown because connect() was call after client creation.";
-            }
+        JCPAPIsClientSrv jcpClient = initJCPClient(settings);
 
         JSLServiceInfo_002 srvInfo = new JSLServiceInfo_002(settings, jcpClient, instanceId);
 
@@ -137,6 +106,55 @@ public class JSL_002 extends AbsJSL {
     @Override
     public String[] versionsJCPAPIs() {
         return new String[]{Versions.VER_JCP_APIs_2_0};
+    }
+
+    private static JCPAPIsClientSrv initJCPClient(JSLSettings_002 settings) throws JCPClient2.AuthenticationException {
+        JCPAPIsClientSrv jcpClient = null;
+        try {
+            jcpClient = new JCPAPIsClientSrv(
+                    settings.getJCPUseSSL(),
+                    settings.getJCPId(),
+                    settings.getJCPSecret(),
+                    settings.getJCPUrlAPIs(),
+                    settings.getJCPUrlAuth(),
+                    settings.getJCPCallback(),
+                    settings.getJCPAuthCodeRefreshToken(),
+                    settings.getJCPRefreshTime()) {
+
+                @Override
+                protected void storeTokens() {
+                    // Store refresh tokens
+                    if (isClientCredentialFlowEnabled())
+                        settings.setJCPAuthCodeRefreshToken(null);
+                    if (isAuthCodeFlowEnabled())
+                        settings.setJCPAuthCodeRefreshToken(getAuthCodeRefreshToken());
+                }
+
+            };
+        } catch (StateException ignore) {}
+        assert jcpClient != null : "Can't throw exceptions during initialization";
+
+        if (settings.getJCPConnect()) {
+            try {
+                try {
+                    jcpClient.connect();
+                    JavaThreads.softSleep(100); // wait to create the connection
+                    if (jcpClient.isConnected())
+                        log.info("JCP Client initialized and connected successfully");
+                    else
+                        log.warn(String.format("JCP Client initialized but not connected, retry every %d seconds.", settings.getJCPRefreshTime()));
+
+                } catch (JCPClient2.AuthenticationException e) {
+                    log.warn(String.format("Error on user authentication to the JCP %s, retry once", e.getMessage()), e);
+                    jcpClient.connect();
+                }
+            } catch (StateException e) {
+                assert false : "Exception StateException can't be thrown because connect() was call after client creation.";
+            }
+        } else
+            log.info("JCP Client initialized but not connected as required by settings.");
+
+        return jcpClient;
     }
 
 }

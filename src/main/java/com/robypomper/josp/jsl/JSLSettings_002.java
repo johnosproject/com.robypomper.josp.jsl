@@ -29,6 +29,7 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
     //@formatter:off
     public static final String JCP_CONNECT              = "jcp.connect";
     public static final String JCP_CONNECT_DEF          = "true";
+    /** Used as `connectionTimerDelaySeconds` value into DefaultJCPClient2. */
     public static final String JCP_REFRESH_TIME         = "jcp.client.refresh";
     public static final String JCP_REFRESH_TIME_DEF     = "30";
     public static final String JCP_SSL                  = "jcp.client.ssl";
