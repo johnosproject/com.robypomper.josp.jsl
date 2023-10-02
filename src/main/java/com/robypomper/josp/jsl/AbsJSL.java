@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -75,6 +76,7 @@ public abstract class AbsJSL implements JSL {
     private final JSLAdmin admin;
     private final JSLObjsMngr objs;
     private final JSLCommunication comm;
+    private final List<JSLStateListener> stateListeners = new ArrayList<>();
 
 
     // Internal vars
@@ -259,8 +261,11 @@ public abstract class AbsJSL implements JSL {
                 "Method startupInstance() can be called only from STOP or RESTARTING state";
 
         synchronized (state) {
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.STARTING);
+                emitJSLStateChange(state.get(), oldState);
+            }
 
             try {
                 boolean startLocal = ((JSLSettings_002) settings).getLocalEnabled();
@@ -284,8 +289,11 @@ public abstract class AbsJSL implements JSL {
                     log.warn("JCP GWs client not connected, retry later", e);
             }
 
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.RUN);
+                emitJSLStateChange(state.get(), oldState);
+            }
         }
 
         log.info(String.format("JSL Service '%s' started", srvInfo.getSrvId()));
@@ -299,8 +307,11 @@ public abstract class AbsJSL implements JSL {
                 "Method shutdownInstance() can be called only from RUN or RESTARTING state";
 
         synchronized (state) {
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.SHOUTING);
+                emitJSLStateChange(state.get(), oldState);
+            }
 
             log.trace("JSLCommunication stop discovery and disconnect from JCP");
             try {
@@ -317,8 +328,11 @@ public abstract class AbsJSL implements JSL {
                 log.warn(String.format("Error on disconnecting cloud communication of '%s' service because %s", srvInfo.getSrvId(), e.getMessage()), e);
             }
 
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.STOP);
+                emitJSLStateChange(state.get(), oldState);
+            }
         }
 
         log.info(String.format("JSL Service '%s' stopped", srvInfo.getSrvId()));
@@ -330,7 +344,9 @@ public abstract class AbsJSL implements JSL {
                 "Method shutdownInstance() can be called only from RUN or STOP state";
 
         synchronized (state) {
+            JSLState oldState = state.get();
             state.set(JSLState.RESTARTING);
+            emitJSLStateChange(state.get(), oldState);
 
             log.trace("JSL shout down for restarting");
             if (state.enumEquals(JSLState.RUN))
@@ -339,7 +355,9 @@ public abstract class AbsJSL implements JSL {
             log.trace("JSL startup for restarting");
             startupInstance();
 
+            oldState = state.get();
             state.set(JSLState.RUN);
+            emitJSLStateChange(state.get(), oldState);
         }
 
         log.info(String.format("JSL Service '%s' restarted", srvInfo.getSrvId()));
@@ -394,6 +412,36 @@ public abstract class AbsJSL implements JSL {
     @Override
     public JSLCommunication getCommunication() {
         return comm;
+    }
+
+
+    // Listeners
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addListener(JSLStateListener listener) {
+        if (stateListeners.contains(listener))
+            return;
+
+        stateListeners.add(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeListener(JSLStateListener listener) {
+        if (!stateListeners.contains(listener))
+            return;
+
+        stateListeners.remove(listener);
+    }
+
+    protected void emitJSLStateChange(JSLState newState, JSLState oldState) {
+        for (JSLStateListener l : stateListeners)
+            l.onJSLStateChanged(newState, oldState);
     }
 
 }

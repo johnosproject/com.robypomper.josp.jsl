@@ -133,6 +133,29 @@ public interface JSL {
     JSLCommunication getCommunication();
 
 
+    // Listeners
+
+    /**
+     * Add given listener to current JSLState's events.
+     *
+     * @param listener the listener to add.
+     */
+    void addListener(JSLStateListener listener);
+
+    /**
+     * Remove given listener from current JSLState's events.
+     *
+     * @param listener the listener to remove.
+     */
+    void removeListener(JSLStateListener listener);
+
+    interface JSLStateListener {
+
+        void onJSLStateChanged(JSLState newState, JSLState oldState);
+
+    }
+
+
     // Settings class
 
     /**
