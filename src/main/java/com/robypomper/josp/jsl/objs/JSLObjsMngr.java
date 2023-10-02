@@ -70,6 +70,12 @@ public interface JSLObjsMngr {
     JSLRemoteObject getByConnection(JSLLocalClient client);
 
     /**
+     * @param model required object's model.
+     * @return the object associated to given local connection, null if not found.
+     */
+    List<JSLRemoteObject> getByModel(String model);
+
+    /**
      * @param pattern object's search pattern.
      * @return an array containing all object's corresponding to given search
      * pattern.

@@ -120,6 +120,19 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      * {@inheritDoc}
      */
     @Override
+    public List<JSLRemoteObject> getByModel(String model) {
+        List<JSLRemoteObject> filteredObjs = new ArrayList<>();
+        for (JSLRemoteObject obj : objs)
+            if (obj.getInfo().getModel().compareToIgnoreCase(model)==0)
+                filteredObjs.add(obj);
+
+        return filteredObjs;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern) {
         log.warn("Method searchObjects(...) not implemented, return empty objects list");
         return new ArrayList<>();
