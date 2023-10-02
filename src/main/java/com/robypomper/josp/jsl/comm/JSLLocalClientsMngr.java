@@ -26,6 +26,8 @@ import com.robypomper.discovery.DiscoveryServicesListener;
 import com.robypomper.discovery.DiscoverySystemFactory;
 import com.robypomper.java.JavaDate;
 import com.robypomper.java.JavaEnum;
+import com.robypomper.java.JavaJKS;
+import com.robypomper.java.JavaSSL;
 import com.robypomper.josp.jsl.JSLSettings_002;
 import com.robypomper.josp.jsl.JSL_002;
 import com.robypomper.josp.jsl.objs.JSLObjsMngr_002;
@@ -342,25 +344,32 @@ public class JSLLocalClientsMngr {
         @Override
         public void onServiceDiscovered(DiscoveryService discSrv) {
             Thread.currentThread().setName("JSLDiscovery");
-            log.info(String.format("Discover object's service '%s' at '%s:%d' on '%s' interface by '%s' service", discSrv.name, discSrv.address, discSrv.port, discSrv.intf, srvInfo.getSrvId()));
-            localDiscovered.put(discSrv, true);
+            synchronized (localClients) {
+                log.info(String.format("Discover object's service '%s' at '%s:%d' on '%s' interface by '%s' service", discSrv.name, discSrv.address, discSrv.port, discSrv.intf, srvInfo.getSrvId()));
+                localDiscovered.put(discSrv, true);
 
-            // Check if discovered service is at localhost (if check enabled)
-            if (locSettings.getLocalOnlyLocalhost() && !discSrv.address.isLoopbackAddress()) {
-                log.warn(String.format("Object's service '%s' at '%s:%d' use not Localhost address then discarded", discSrv.name, discSrv.address, discSrv.port));
-                return;
+                // Check if discovered service is at localhost (if check enabled)
+                if (locSettings.getLocalOnlyLocalhost() && !discSrv.address.isLoopbackAddress()) {
+                    log.warn(String.format("Object's service '%s' at '%s:%d' use not Localhost address then discarded", discSrv.name, discSrv.address, discSrv.port));
+                    return;
+                }
+
+                // Create discovered service connection
+                JSLLocalClient locConn;
+                try {
+                    locConn = createAndConnectClient(discSrv);
+                    localClients.put(locConn, false);
+
+                } catch (PeerConnectionException e) {
+                    log.warn(String.format("Error connecting on discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
+                } catch (JavaJKS.GenerationException e) {
+                    log.warn(String.format("Error generating local certificates for connection to discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
+                } catch (JavaSSL.GenerationException e) {
+                    log.warn(String.format("Error generating SSL context for connection to discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
+                } catch (JavaJKS.LoadingException e) {
+                    log.warn(String.format("Error loading local certificates for connection to discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
+                }
             }
-
-            // Create discovered service connection
-            JSLLocalClient locConn;
-            try {
-                locConn = createAndConnectClient(discSrv);
-
-            } catch (PeerConnectionException e) {
-                log.warn(String.format("Error connecting on discovered service '%s' at '%s:%d'", discSrv.name, discSrv.address, discSrv.port), e);
-                return;
-            }
-            localClients.put(locConn, false);
         }
 
         /**
@@ -373,14 +382,13 @@ public class JSLLocalClientsMngr {
 
     };
 
-    private JSLLocalClient createAndConnectClient(DiscoveryService discSrv) throws PeerConnectionException {
-        log.debug(String.format("Connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
-
-        JSLLocalClient locConn = JSLLocalClient.instantiate(jslComm, this, srvInfo.getFullId(), discSrv.address, discSrv.port, discSrv.name);      // ToDo: Give also discSrv.interface, so client can bind right interface
+    private JSLLocalClient createAndConnectClient(DiscoveryService discSrv) throws PeerConnectionException, JavaJKS.GenerationException, JavaSSL.GenerationException, JavaJKS.LoadingException {
+        JSLLocalClient locConn = JSLLocalClient.instantiate(jslComm, this, srvInfo.getFullId(),
+                discSrv.address, discSrv.port, discSrv.name,
+                locSettings.getLocalKeyStorePath(), locSettings.getLocalKeyStorePass(),
+                locSettings.getLocalKeyStoreAlias(), locSettings.getLocalKeyStoreDefaultPath()
+        );      // ToDo: Give also discSrv.intf, so client can bind right interface
         locConn.connect();
-
-        log.debug(String.format("Service connecting to '%s' object on server '%s:%d' from '%s' service", discSrv.name, discSrv.address, discSrv.port, srvInfo.getSrvId()));
-
         return locConn;
     }
 

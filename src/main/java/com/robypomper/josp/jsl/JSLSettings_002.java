@@ -22,7 +22,9 @@ import com.robypomper.settings.DefaultSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Random;
 
 public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
 
@@ -51,6 +53,14 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
     public static final String JSLSRV_NAME_DEF          = "";
     public static final String JSLSRV_ID                = "jsl.srv.id";
     public static final String JSLSRV_ID_DEF            = "";
+    public static final String JSLSRV_INSTANCE          = "jsl.srv.instance";
+    public static final String JSLSRV_INSTANCE_DEF      = "";
+    /**
+     * Path to use as main dir for all relative paths, like the `jsl.comm.local.ks.path`.
+     * By default, it's an empty string that means to use the working directory as base path.
+     */
+    public static final String JSLSRV_BASE_DIR          = "jsl.srv.baseDir";
+    public static final String JSLSRV_BASE_DIR_DEF      = "";
 
     public static final String JSLUSR_NAME              = "jsl.usr.name";
     public static final String JSLUSR_NAME_DEF          = "";
@@ -61,6 +71,39 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
     public static final String JSLCOMM_LOCAL_ENABLED_DEF = "true";
     public static final String JSLCOMM_LOCAL_ONLY_LOCALHOST = "jsl.comm.local.onlyLocalhost";
     public static final String JSLCOMM_LOCAL_ONLY_LOCALHOST_DEF = "false";
+
+    /**
+     * Path for the service's local keystore. It can be absolute or relative to `jsl.srv.baseDir`.
+     * By default, it's an empty string, that means it will generate his own certificate at first
+     * object's connection and save it into `jsl.comm.local.ks.defPath`.
+     */
+    public static final String JSLCOMM_LOCAL_KS_PATH    = "jsl.comm.local.ks.path";
+    public static final String JSLCOMM_LOCAL_KS_PATH_DEF = "";
+
+    /**
+     * Password for the service's local keystore. 
+     * By default, it's an empty string that means no password.
+     */
+    public static final String JSLCOMM_LOCAL_KS_PASS    = "jsl.comm.local.ks.pass";
+    public static final String JSLCOMM_LOCAL_KS_PASS_DEF = "";
+
+    /**
+     * Alias of the certificate stored into the service's local keystore. 
+     * By default, it's an empty string that means `$SRV_ID-LocalCert`.
+     */
+    public static final String JSLCOMM_LOCAL_KS_ALIAS    = "jsl.comm.local.ks.alias";
+    public static final String JSLCOMM_LOCAL_KS_ALIAS_DEF = "";
+
+    /**
+     * Default path for the service's local keystore, used when no path is specified
+     * into `` property and a new keystore is generated.
+     * By default, it's `{@value #JSLCOMM_LOCAL_KS_DEF_PATH_DEF}`.
+     * It can be also an empty string, then the `{@value com.robypomper.josp.jsl.comm.JSLLocalClient#KS_DEF_PATH}`
+     * value will be used.
+     */
+    public static final String JSLCOMM_LOCAL_KS_DEF_PATH = "jsl.comm.local.ks.defPath";
+    public static final String JSLCOMM_LOCAL_KS_DEF_PATH_DEF = "./local_ks.jks";
+
     public static final String JSLCOMM_LOCAL_DISCOVERY  = "jsl.comm.local.discovery";
     public static final String JSLCOMM_LOCAL_DISCOVERY_DEF = "Auto";
 
@@ -148,12 +191,34 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
         store(JSLSRV_ID, srvId, true);
     }
 
+    public String getSrvInstance() {
+        String fromFile = getString(JSLSRV_INSTANCE, null);
+        if (fromFile != null)
+            return fromFile;
+
+        String newInstance = Integer.toString(new Random().nextInt(JSL_002.MAX_INSTANCE_ID));
+        setSrvInstance(newInstance);
+        return newInstance;
+    }
+
+    public void setSrvInstance(String srvInstance) {
+        store(JSLSRV_INSTANCE, srvInstance, true);
+    }
+
     public String getSrvName() {
         return getString(JSLSRV_NAME, JSLSRV_NAME_DEF);
     }
 
     public void setSrvName(String srvName) {
         store(JSLSRV_NAME, srvName, true);
+    }
+
+    public String getSrvBaseDir() {
+        return getString(JSLSRV_BASE_DIR, JSLSRV_BASE_DIR_DEF);
+    }
+
+    public void setSrvBaseDir(String srvBaseDir) {
+        store(JSLSRV_BASE_DIR, srvBaseDir, true);
     }
 
 
@@ -185,6 +250,28 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
 
     public boolean getLocalOnlyLocalhost() {
         return getBoolean(JSLCOMM_LOCAL_ONLY_LOCALHOST, JSLCOMM_LOCAL_ONLY_LOCALHOST_DEF);
+    }
+
+    public String getLocalKeyStorePath() {
+        String path = getString(JSLCOMM_LOCAL_KS_PATH, JSLCOMM_LOCAL_KS_PATH_DEF);
+        if (!Paths.get(path).isAbsolute())
+            path = Paths.get(getSrvBaseDir(), path).toString();
+        return path;
+    }
+
+    public String getLocalKeyStorePass() {
+        return getString(JSLCOMM_LOCAL_KS_PASS, JSLCOMM_LOCAL_KS_PASS_DEF);
+    }
+
+    public String getLocalKeyStoreAlias() {
+        return getString(JSLCOMM_LOCAL_KS_ALIAS, JSLCOMM_LOCAL_KS_ALIAS_DEF);
+    }
+
+    public String getLocalKeyStoreDefaultPath() {
+        String path = getString(JSLCOMM_LOCAL_KS_DEF_PATH, JSLCOMM_LOCAL_KS_DEF_PATH_DEF);
+        if (!Paths.get(path).isAbsolute())
+            path = Paths.get(getSrvBaseDir(), path).toString();
+        return path;
     }
 
     public String getJSLDiscovery() {

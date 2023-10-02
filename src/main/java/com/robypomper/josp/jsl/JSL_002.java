@@ -47,7 +47,7 @@ public class JSL_002 extends AbsJSL {
     // Class constants
 
     public static final String VERSION = BuildInfoJospJSL.current.buildVersion;
-    private static final int MAX_INSTANCE_ID = 10000;
+    public static final int MAX_INSTANCE_ID = 10000;
 
 
     // Internal vars
@@ -64,7 +64,7 @@ public class JSL_002 extends AbsJSL {
     public static JSL instance(JSLSettings_002 settings) throws JSLCommunication.LocalCommunicationException, JCPClient2.AuthenticationException {
         log.info("\n\n" + JavaVersionUtils.buildJavaVersionStr("John Service Library", VERSION));
 
-        String instanceId = Integer.toString(new Random().nextInt(MAX_INSTANCE_ID));
+        String instanceId = settings.getSrvInstance();
         log.info(String.format("Init JSL instance id '%s'", instanceId));
 
         JCPAPIsClientSrv jcpClient = initJCPClient(settings);
