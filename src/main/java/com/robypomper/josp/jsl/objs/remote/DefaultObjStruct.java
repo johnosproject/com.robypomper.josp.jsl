@@ -25,6 +25,8 @@ import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.objs.history.DefaultHistoryCompStatus;
 import com.robypomper.josp.jsl.objs.history.HistoryCompStatus;
 import com.robypomper.josp.jsl.objs.structure.*;
+import com.robypomper.josp.jsl.objs.structure.pillars.JSLBooleanState;
+import com.robypomper.josp.jsl.objs.structure.pillars.JSLRangeState;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
 import org.slf4j.Logger;
@@ -140,14 +142,19 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
 
         // set object/component's update
         if (stateComp.updateStatus(upd)) {
-            log.info(String.format("Updated status of '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+            String state = "";
+            if (stateComp instanceof JSLBooleanState)
+                state = Boolean.toString(((JSLBooleanState)stateComp).getState());
+            else if (stateComp instanceof JSLRangeState)
+                state = Double.toString(((JSLRangeState)stateComp).getState());
+            log.info(String.format("Updated status of '%s' component with value '%s' for '%s' object", compPath.getString(), state, getRemote().getId()));
 
         } else {
             log.warn(String.format("Error on processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
             return false;
         }
 
-        log.debug(String.format("Update '%s...' processed for '%s' object", msg.substring(0, Math.min(10, msg.length())), getRemote().getId()));
+        log.trace(String.format("Update '%s...' processed for '%s' object", msg.substring(0, Math.min(10, msg.length())), getRemote().getId()));
         return true;
     }
 
