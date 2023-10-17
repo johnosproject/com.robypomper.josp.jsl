@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -49,6 +50,7 @@ public class JSLLocalClient extends ClientAbsSSL {
     // Class constants
 
     public static final String KS_PASS = "123456";
+    public static final String KS_DEF_PATH = "./local_ks.jks";
 
 
     // Internal vars
@@ -60,22 +62,41 @@ public class JSLLocalClient extends ClientAbsSSL {
 
 
     // Constructor
+    private static final AbsCustomTrustManager trustManager = new DynAddTrustManager();
+    private static Certificate localCertificate = null;
+    private static SSLContext sslCtx = null;
 
     public static JSLLocalClient instantiate(JSLCommunication_002 communication, JSLLocalClientsMngr clientsMngr, String srvFullId,
-                                             InetAddress remoteAddress, int port, String remoteObjId) {
+                                             InetAddress remoteAddress, int port, String remoteObjId,
+                                             String ksPath, String ksPass, String ksAlias, String defKsPath)
+    throws JavaJKS.GenerationException, JavaSSL.GenerationException, JavaJKS.LoadingException{
+        if (localCertificate == null || sslCtx == null) {
+            if (ksPath == null || ksPath.isEmpty()) {
+                ksPath = defKsPath != null && !defKsPath.isEmpty() ? defKsPath : KS_DEF_PATH;   // name - the system-dependent filename
+                ksPass = KS_PASS;
+            }
 
-        String localId = srvFullId;
+            if (ksAlias == null || ksAlias.isEmpty()) {
+                ksAlias = srvFullId.substring(0, srvFullId.indexOf('/')) + "-LocalCert";
+                //ksAlias = srvFullId + "-LocalCert";
+            }
 
-        AbsCustomTrustManager trustManager = new DynAddTrustManager();
-        Certificate localCertificate = null;
-        SSLContext sslCtx = null;
-        try {
-            KeyStore clientKeyStore = JavaJKS.generateKeyStore(localId, KS_PASS, localId + "-LocalCert");
-            localCertificate = JavaJKS.extractCertificate(clientKeyStore, localId + "-LocalCert");
+            KeyStore clientKeyStore;
+            if (new File(ksPath).exists()) {
+                log.debug(String.format("Load keystore from '%s' path.", ksPath));
+                clientKeyStore = JavaJKS.loadKeyStore(ksPath, ksPass);
+            } else {
+                // certificateId = srvFullId, ksPass = KS_PASS, certAlias = srvId + "-LocalCert"
+                log.debug(String.format("Generate keystore and store to '%s' path.", ksPath));
+                clientKeyStore = JavaJKS.generateKeyStore(srvFullId, KS_PASS, ksAlias);
+                JavaJKS.storeKeyStore(clientKeyStore, ksPath, KS_PASS);
+            }
+
+            log.debug(String.format("Extract local certificate with '%s' alias.", ksAlias));
+            localCertificate = JavaJKS.extractCertificate(clientKeyStore, ksAlias);
+            if (localCertificate == null)
+                throw new JavaJKS.GenerationException(String.format("Certificate alias '%s' not found in '%s' keystore.", ksAlias, ksPath));
             sslCtx = JavaSSL.generateSSLContext(clientKeyStore, KS_PASS, trustManager);
-
-        } catch (JavaJKS.GenerationException | JavaSSL.GenerationException e) {
-            assert false : String.format("JKS and SSL generation are standard and should not throw exception [%s] %s", e.getClass().getSimpleName(), e.getMessage());
         }
 
         return new JSLLocalClient(communication, clientsMngr, srvFullId, remoteAddress, port, remoteObjId, sslCtx, trustManager, localCertificate);
