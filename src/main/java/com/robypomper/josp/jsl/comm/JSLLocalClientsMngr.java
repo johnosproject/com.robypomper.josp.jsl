@@ -173,10 +173,11 @@ public class JSLLocalClientsMngr {
             discover.start();
             log.debug("Local service's discovery started");
             lastStart = JavaDate.getNowDate();
-            emit_LocalStarted();
 
             log.debug("Local Discovery state = RUN");
             state.set(JSLLocalState.RUN_WAITING);
+
+            emit_LocalStarted();
         }
     }
 
@@ -195,6 +196,10 @@ public class JSLLocalClientsMngr {
             log.debug("Local service's discovery stopped");
             discover.removeListener(discoverListener);
             lastStop = JavaDate.getNowDate();
+
+            log.debug("Local Discovery state = STOP");
+            state.set(JSLLocalState.STOP);
+
             emit_LocalStopped();
 
             log.debug("Disconnecting local communication service's clients");
@@ -208,9 +213,6 @@ public class JSLLocalClientsMngr {
                         log.warn(String.format("Error on disconnecting to '%s' object on server '%s:%d' from '%s' service because %s", locConn.getRemoteId(), locConn.getConnectionInfo().getLocalInfo().getAddr().getHostAddress(), locConn.getConnectionInfo().getLocalInfo().getPort(), srvInfo.getSrvId(), e.getMessage()), e);
                     }
             log.debug("Local communication service's clients disconnected");
-
-            log.debug("Local Discovery state = STOP");
-            state.set(JSLLocalState.STOP);
         }
     }
 
