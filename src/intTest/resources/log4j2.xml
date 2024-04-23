@@ -25,36 +25,44 @@
 
     <Appenders>
 
-        <Console name="trace" target="SYSTEM_OUT">
+        <Console name="trace-JSL" target="SYSTEM_OUT">
             <Filters>
-                <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
             <PatternLayout alwaysWriteExceptions="false"
-                           pattern="%d{DEFAULT} # %highlight{[ %-5level | %-15.15markerSimpleName | %-15.-15threadName | %-30.30logger{1.} ]} %msg%n%notEmpty{%ex{full}}"/>
+                           pattern="%d{DEFAULT} # %highlight{[ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]} JSL SERVICE %msg%n%notEmpty{%ex{full}}"/>
         </Console>
 
-        <Console name="trace-libs" target="SYSTEM_OUT">
+        <Console name="trace-JOD" target="SYSTEM_OUT">
             <Filters>
-                <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
             <PatternLayout alwaysWriteExceptions="false"
-                           pattern="           %d{ABSOLUTE} # [ %-5level | %-15.15markerSimpleName | %-15.-15threadName | %-30.30logger{1.} ]  %msg%n%notEmpty{%ex{full}}"/>
+                           pattern="%d{DEFAULT} # %highlight{[ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]} JOD OBJECT  %msg%n%notEmpty{%ex{full}}"/>
+        </Console>
+
+        <Console name="libs-no-testing" target="SYSTEM_OUT">
+            <Filters>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout alwaysWriteExceptions="false"
+                           pattern="           %d{ABSOLUTE} # [ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]             %msg%n%notEmpty{%ex{full}}"/>
         </Console>
 
     </Appenders>
 
     <Loggers>
 
-        <Logger name="com.robypomper" additivity="false">
-            <AppenderRef ref="trace"/>
-        </Logger>
-
         <Root additivity="false" level="ALL">
-            <AppenderRef ref="trace-libs"/>
+            <AppenderRef ref="libs-no-testing"/>
         </Root>
 
-        <Logger name="javax.jmdns" additivity="false">
-            <AppenderRef ref="info-libs"/>
+        <Logger name="com.robypomper.josp.jsl" additivity="false">
+            <AppenderRef ref="trace-JSL"/>
+        </Logger>
+
+        <Logger name="com.robypomper.josp.jod" additivity="false">
+            <AppenderRef ref="trace-JOD"/>
         </Logger>
 
     </Loggers>
