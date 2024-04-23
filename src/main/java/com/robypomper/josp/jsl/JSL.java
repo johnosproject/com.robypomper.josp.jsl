@@ -68,17 +68,17 @@ public interface JSL {
     String version();
 
     /**
-     * @return the list of supported JOSP JOD (direct) versions.
+     * @return the array of supported JOSP JOD (direct) versions.
      */
     String[] versionsJOSPObject();
 
     /**
-     * @return the list of supported JOSP Protocol versions.
+     * @return the array of supported JOSP Protocol versions.
      */
     String[] versionsJOSPProtocol();
 
     /**
-     * @return the list of supported JCP APIs versions.
+     * @return the array of supported JCP APIs versions.
      */
     String[] versionsJCPAPIs();
 

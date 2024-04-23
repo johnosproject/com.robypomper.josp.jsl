@@ -46,8 +46,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.swing.*;
 import java.io.File;
+import java.net.SocketException;
 import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;

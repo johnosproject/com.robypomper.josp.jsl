@@ -35,11 +35,8 @@ import com.robypomper.josp.jsl.user.JSLUserMngr;
 import com.robypomper.josp.jsl.user.JSLUserMngr_002;
 import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.states.StateException;
-import com.robypomper.josp.jsl.BuildInfoJospJSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Random;
 
 
 public class JSL_002 extends AbsJSL {

@@ -48,12 +48,12 @@ public interface JSLObjsMngr {
     // Object's access
 
     /**
-     * @return an array containing all known objects.
+     * @return a List containing all known objects.
      */
     List<JSLRemoteObject> getAllObjects();
 
     /**
-     * @return an array containing all connected objects.
+     * @return a List containing all connected objects.
      */
     List<JSLRemoteObject> getAllConnectedObjects();
 
@@ -71,7 +71,7 @@ public interface JSLObjsMngr {
 
     /**
      * @param pattern object's search pattern.
-     * @return an array containing all object's corresponding to given search
+     * @return a List containing all object's corresponding to given search
      * pattern.
      */
     List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern);

@@ -211,7 +211,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No object found with id '%s'", objId);
 
         // Get statuses history
-        List<JOSPEvent> eventsHistory = null;
+        List<JOSPEvent> eventsHistory;
         try {
             eventsHistory = obj.getInfo().getEventsHistory(limits, 10);
         } catch (JSLRemoteObject.ObjectNotConnected objectNotConnected) {
@@ -335,7 +335,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No component found with path '%s' in '%s' object", compPath, objId);
 
         // Get statuses history
-        List<JOSPHistory> statusHistory = null;
+        List<JOSPHistory> statusHistory;
         try {
             statusHistory = obj.getStruct().getComponentHistory(comp, limits, 30);
         } catch (JSLRemoteObject.ObjectNotConnected objectNotConnected) {

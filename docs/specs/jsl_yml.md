@@ -14,7 +14,7 @@ Those properties include service's id and name, but also JCP urls and boolean
 properties to enable/disable communications.
 
 _In order to obtain service's credentials, generate them from your local JCP
-or email [tech@johnosproject.org](tech@johnosproject.org) for the public
+or email [tech@johnosproject.org](mailto:tech@johnosproject.org) for the public
 available JCP credentials._
 
 **If the JSL instance is running, you can use his methods to update initial configs.**

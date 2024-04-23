@@ -111,7 +111,7 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
     }
 
     /**
-     * @return an array containing all available local connections to the object.
+     * @return a list containing all available local connections to the object.
      * if the object is disconnected or works only via cloud, then the
      * returned array will be empty.
      */

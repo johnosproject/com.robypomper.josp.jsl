@@ -376,14 +376,6 @@ public class JSLLocalClientsMngr {
                     log.warn(String.format("Error on disconnecting from '%s' object on server '%s:%d' from '%s' service because %s", client.getRemoteId(), client.getConnectionInfo().getLocalInfo().getAddr().getHostAddress(), client.getConnectionInfo().getLocalInfo().getPort(), srvInfo.getSrvId(), e.getMessage()), e);
                 }
         log.debug("Local communication service's clients disconnected");
-
-        // todo clean the code
-//        availableDiscoveryServices.clear();
-//        discoveryServicesLatches.clear();
-//        connectionsDiscoveryServices.clear();
-//        availableConnections.clear();
-//        connectionsObjectIDs.clear();
-//        connectionsRemoteObjects.clear();
     }
 
     private void startDiscovering() throws Discover.DiscoveryException {

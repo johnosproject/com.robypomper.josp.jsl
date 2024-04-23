@@ -1,14 +1,11 @@
 package com.robypomper.josp.jsl.comm;
 
 import com.robypomper.comm.client.ClientAbsTCP;
-import com.robypomper.comm.peer.Peer;
 import com.robypomper.comm.peer.PeerConnectionListener;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.protocol.JOSPSecurityLevel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 
