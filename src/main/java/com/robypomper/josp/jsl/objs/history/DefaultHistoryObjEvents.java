@@ -100,10 +100,10 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
 
     private void send(int reqId, HistoryLimits limits) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
         try {
-            sendToObjectCloudly(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createHistoryEventsMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
+            sendToObjectCloudly(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createEventsReqMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
 
         } catch (JSLRemoteObject.MissingPermission | PeerNotConnectedException | PeerStreamException ignore) {
-            sendToObjectLocally(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createHistoryEventsMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
+            sendToObjectLocally(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createEventsReqMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
         }
     }
 
@@ -114,17 +114,17 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
         String reqId;
         List<JOSPEvent> eventsHistory;
         try {
-            reqId = JOSPProtocol_ObjectToService.getHistoryEventsMsg_ReqId(msg);
-            eventsHistory = JOSPProtocol_ObjectToService.getHistoryEventsMsg_HistoryStatus(msg);
+            reqId = JOSPProtocol_ObjectToService.getEventsResMsg_ReqId(msg);
+            eventsHistory = JOSPProtocol_ObjectToService.getEventsResMsg_HistoryMessage(msg);
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_EVENTS_REQ_NAME, e.getMessage()), e);
+            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.EVENTS_MSG_REQ_NAME, e.getMessage()), e);
             return false;
         }
 
         EventsListener l = listeners.get(Integer.parseInt(reqId));
         if (l == null) {
-            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
+            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.EVENTS_MSG_REQ_NAME, reqId));
             return false;
         }
 

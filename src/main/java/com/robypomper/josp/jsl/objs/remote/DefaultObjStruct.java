@@ -161,7 +161,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
     public boolean processHistoryCompStatusMsg(String msg) {
         String compPath;
         try {
-            compPath = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_CompPath(msg);
+            compPath = JOSPProtocol_ObjectToService.getHistoryResMsg_CompPath(msg);
         } catch (JOSPProtocol.ParsingException e) {
             log.warn(String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
             return false;
@@ -205,7 +205,7 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
     // Components History
 
     @Override
-    public List<JOSPStatusHistory> getComponentHistory(JSLComponent component, HistoryLimits limits, int timeoutSeconds) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
+    public List<JOSPHistory> getComponentHistory(JSLComponent component, HistoryLimits limits, int timeoutSeconds) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
         return getComponentHistory(component).getStatusHistory(limits, timeoutSeconds);
     }
 

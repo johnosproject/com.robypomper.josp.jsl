@@ -152,9 +152,9 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
             return ((DefaultObjStruct) getStruct()).processObjectStructMsg(msg);
         else if (JOSPProtocol_ObjectToService.isObjectStateUpdMsg(msg))
             return ((DefaultObjStruct) getStruct()).processObjectUpdMsg(msg);
-        else if (JOSPProtocol_ObjectToService.isHistoryCompStatusMsg(msg))
+        else if (JOSPProtocol_ObjectToService.isHistoryResMsg(msg))
             return ((DefaultObjStruct) getStruct()).processHistoryCompStatusMsg(msg);
-        else if (JOSPProtocol_ObjectToService.isHistoryEventsMsg(msg))
+        else if (JOSPProtocol_ObjectToService.isEventsResMsg(msg))
             return ((DefaultObjInfo) getInfo()).processHistoryEventsMsg(msg);
 
         else if (JOSPProtocol_ObjectToService.isObjectPermsMsg(msg))

@@ -63,13 +63,13 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
     }
 
     @Override
-    public List<JOSPStatusHistory> getStatusHistory(HistoryLimits limits, long timeout) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
-        final List<JOSPStatusHistory> result = new ArrayList<>();
+    public List<JOSPHistory> getStatusHistory(HistoryLimits limits, long timeout) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
+        final List<JOSPHistory> result = new ArrayList<>();
         final CountDownLatch countdown = new CountDownLatch(1);
         // register internal listener
         int reqId = registerListener(new StatusHistoryListener() {
             @Override
-            public void receivedStatusHistory(List<JOSPStatusHistory> history) {
+            public void receivedStatusHistory(List<JOSPHistory> history) {
                 result.addAll(history);
                 countdown.countDown();
             }
@@ -102,10 +102,10 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     private void send(int reqId, HistoryLimits limits) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
         try {
-            sendToObjectCloudly(JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryCompStatusMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
+            sendToObjectCloudly(JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryReqMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
 
         } catch (JSLRemoteObject.MissingPermission | PeerNotConnectedException | PeerStreamException ignore) {
-            sendToObjectLocally(JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryCompStatusMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
+            sendToObjectLocally(JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryReqMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
         }
     }
 
@@ -120,21 +120,21 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
         String fullSrvId;
         String compPathStr;
         String reqId;
-        List<JOSPStatusHistory> statusesHistory;
+        List<JOSPHistory> statusesHistory;
         try {
-            objId = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_ObjId(msg);
-            compPathStr = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_CompPath(msg);
-            reqId = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_ReqId(msg);
-            statusesHistory = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_HistoryStatus(msg);
+            objId = JOSPProtocol_ObjectToService.getHistoryResMsg_ObjId(msg);
+            compPathStr = JOSPProtocol_ObjectToService.getHistoryResMsg_CompPath(msg);
+            reqId = JOSPProtocol_ObjectToService.getHistoryResMsg_ReqId(msg);
+            statusesHistory = JOSPProtocol_ObjectToService.getHistoryResMsg_HistoryMessage(msg);
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, e.getMessage()), e);
+            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_NAME, e.getMessage()), e);
             return false;
         }
 
         StatusHistoryListener l = listeners.get(Integer.parseInt(reqId));
         if (l == null) {
-            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
+            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_NAME, reqId));
             return false;
         }
 

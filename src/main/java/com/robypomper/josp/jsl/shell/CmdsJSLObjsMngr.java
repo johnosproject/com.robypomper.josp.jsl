@@ -32,7 +32,7 @@ import com.robypomper.josp.jsl.objs.structure.pillars.JSLRangeState;
 import com.robypomper.josp.protocol.HistoryLimits;
 import com.robypomper.josp.protocol.JOSPEvent;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.josp.protocol.JOSPStatusHistory;
+import com.robypomper.josp.protocol.JOSPHistory;
 
 import java.util.List;
 
@@ -336,7 +336,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No component found with path '%s' in '%s' object", compPath, objId);
 
         // Get statuses history
-        List<JOSPStatusHistory> statusHistory = null;
+        List<JOSPHistory> statusHistory = null;
         try {
             statusHistory = obj.getStruct().getComponentHistory(comp, limits, 30);
         } catch (JSLRemoteObject.ObjectNotConnected objectNotConnected) {
@@ -349,7 +349,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No history for Component '%s' of '%s' Object", compPath, objId);
 
         return String.format("Status History for Component '%s' of '%s' Object\n", compPath, objId) +
-                JOSPStatusHistory.logStatuses(statusHistory, false);
+                JOSPHistory.logStatuses(statusHistory, false);
     }
 
 
