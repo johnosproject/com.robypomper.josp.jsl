@@ -72,7 +72,7 @@ ext {
     set('gradleWrapperVersion', '8.3')
 
     // Preset build modes for JOSP Project
-    set('jospMode', ext.get('jospModes.DEV'))       // valid values: DEV, SNAPSHOT or RELEASE
+    set('jospMode', ext.get('jospModes.RELEASE'))       // valid values: DEV, SNAPSHOT or RELEASE
 
     // Set true to enable private tasks (require $USER_HOME/.gradle/properties.gradle file)
     set('OVERRIDE_enablePrivate', false)

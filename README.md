@@ -5,7 +5,7 @@ Into this repository are contained all sources for the JSL library from the
 
 **Artifact Name:** jospJSL<br />
 **Artifact Group:** com.robypomper.josp<br />
-**Artifact Version:** 2.2.3
+**Artifact Version:** 2.2.4
 
 [README](README.md) | [SPECS](docs/specs.md) | [GUIDES](docs/guides.md) | [CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
 
