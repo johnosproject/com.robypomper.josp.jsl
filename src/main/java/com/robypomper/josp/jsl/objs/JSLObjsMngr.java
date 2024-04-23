@@ -94,9 +94,10 @@ public interface JSLObjsMngr {
      * If there is no {@link JSLRemoteObject} yet, it will be created.
      *
      * @param serverConnection the open local connection to JOD object.
+     * @param locConnObjId     the object's id that the local connection is connected
      * @return created or connected object.
      */
-    JSLRemoteObject addNewConnection(JSLLocalClient serverConnection);
+    JSLRemoteObject addNewConnection(JSLLocalClient serverConnection, String locConnObjId);
 
     /**
      * Remove given connection to corresponding {@link JSLRemoteObject}.

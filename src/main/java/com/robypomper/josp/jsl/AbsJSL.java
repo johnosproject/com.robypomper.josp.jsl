@@ -240,12 +240,6 @@ public abstract class AbsJSL implements JSL {
         log.debug(String.format("                                     +            State (ClientMngr)= %s", comm.getLocalConnections().getState()));
         log.debug(String.format("                                     +            IsRunning         = %s", comm.getLocalConnections().isRunning()));
         log.debug(String.format("                                     +            ClientsCount      = %d", comm.getLocalConnections().getLocalClients().size()));
-        log.debug(String.format("                                     +            ClientsConn       = %d", comm.getLocalConnections().getConnectedCount()));
-        log.debug(String.format("                                     +            ClientsDisconn    = %d", comm.getLocalConnections().getDisconnectedCount()));
-        log.debug(String.format("                                     +            LastStart         = %s", comm.getLocalConnections().getLastStartup()));
-        log.debug(String.format("                                     +            LastStop          = %s", comm.getLocalConnections().getLastShutdown()));
-        log.debug(String.format("                                     +            LastConn          = %s", comm.getLocalConnections().getLastObjConnection()));
-        log.debug(String.format("                                     +            LastDisconn       = %s", comm.getLocalConnections().getLastObjDisconnection()));
         List<JSLRemoteObject> objsList = objs.getAllObjects();
         StringBuilder objNames = new StringBuilder();
         for (JSLRemoteObject ro : objsList)

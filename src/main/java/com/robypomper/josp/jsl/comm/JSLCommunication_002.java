@@ -69,11 +69,11 @@ public class JSLCommunication_002 implements JSLCommunication {
         this.jcpClient = jcpClient;
         this.jcpClient.addConnectionListener(jcpConnectionListener);
 
-        this.localClients = new JSLLocalClientsMngr(jsl, this, jslObjsMngr, locSettings, srvInfo);
+        this.localClients = new JSLLocalClientsMngr(this, jslObjsMngr, locSettings, srvInfo);
         this.gwClient = new JSLGwS2OClient(this, srvInfo, jcpClient, instanceId);
         this.gwClient.addListener(gwClientListener);
 
-        log.info(String.format("Initialized JODCommunication instance for '%s' ('%s') service", srvInfo.getSrvName(), srvInfo.getSrvId()));
+        log.info(String.format("Initialized JSLCommunication instance for '%s' ('%s') service", srvInfo.getSrvName(), srvInfo.getSrvId()));
     }
 
 

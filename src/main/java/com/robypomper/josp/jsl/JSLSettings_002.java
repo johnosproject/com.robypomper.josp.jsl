@@ -71,6 +71,34 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
     public static final String JSLCOMM_LOCAL_ENABLED_DEF = "true";
     public static final String JSLCOMM_LOCAL_ONLY_LOCALHOST = "jsl.comm.local.onlyLocalhost";
     public static final String JSLCOMM_LOCAL_ONLY_LOCALHOST_DEF = "false";
+    public static final String JSLCOMM_LOCAL_DISCOVERY  = "jsl.comm.local.discovery";
+    public static final String JSLCOMM_LOCAL_DISCOVERY_DEF = "Auto";
+    /**
+     * If 'true' the local client will use only SSL.
+     * <p>
+     * Default `false`.
+     */
+    public static final String JSLCOMM_LOCAL_ONLY_SSL    = "jsl.comm.local.onlySSL";
+    public static final String JSLCOMM_LOCAL_ONLY_SSL_DEF = "false";
+    /**
+     * If 'true' the local client will use only NoSSL.
+     * <p>
+     * Default `false`.
+     */
+    public static final String JSLCOMM_LOCAL_ONLY_NO_SSL    = "jsl.comm.local.onlyNoSSL";
+    public static final String JSLCOMM_LOCAL_ONLY_NO_SSL_DEF = "false";
+    /**
+     * If 'true' the local client will try to exchange his certificate with the
+     * JOD Remote Object's one, always if the object's is configured to share
+     * his certificate.
+     * <p>
+     * Enable the {@link com.robypomper.josp.protocol.JOSPSecurityLevel#SSLShareInstance}
+     * and {@link com.robypomper.josp.protocol.JOSPSecurityLevel#SSLShareComp} security levels.
+     * <p>
+     * Default `true`.
+     */
+    public static final String JSLCOMM_LOCAL_SSL_SHARING_ENABLED    = "jsl.comm.local.sslSharingEnabled";
+    public static final String JSLCOMM_LOCAL_SSL_SHARING_ENABLED_DEF = "true";
 
     /**
      * Path for the service's local keystore. It can be absolute or relative to `jsl.srv.baseDir`.
@@ -78,14 +106,14 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
      * object's connection and save it into `jsl.comm.local.ks.defPath`.
      */
     public static final String JSLCOMM_LOCAL_KS_PATH    = "jsl.comm.local.ks.path";
-    public static final String JSLCOMM_LOCAL_KS_PATH_DEF = "";
+    public static final String JSLCOMM_LOCAL_KS_PATH_DEF = "./local_ks.jks";
 
     /**
      * Password for the service's local keystore. 
      * By default, it's an empty string that means no password.
      */
     public static final String JSLCOMM_LOCAL_KS_PASS    = "jsl.comm.local.ks.pass";
-    public static final String JSLCOMM_LOCAL_KS_PASS_DEF = "";
+    public static final String JSLCOMM_LOCAL_KS_PASS_DEF = "123456";
 
     /**
      * Alias of the certificate stored into the service's local keystore. 
@@ -93,19 +121,6 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
      */
     public static final String JSLCOMM_LOCAL_KS_ALIAS    = "jsl.comm.local.ks.alias";
     public static final String JSLCOMM_LOCAL_KS_ALIAS_DEF = "";
-
-    /**
-     * Default path for the service's local keystore, used when no path is specified
-     * into `` property and a new keystore is generated.
-     * By default, it's `{@value #JSLCOMM_LOCAL_KS_DEF_PATH_DEF}`.
-     * It can be also an empty string, then the `{@value com.robypomper.josp.jsl.comm.JSLLocalClient#KS_DEF_PATH}`
-     * value will be used.
-     */
-    public static final String JSLCOMM_LOCAL_KS_DEF_PATH = "jsl.comm.local.ks.defPath";
-    public static final String JSLCOMM_LOCAL_KS_DEF_PATH_DEF = "./local_ks.jks";
-
-    public static final String JSLCOMM_LOCAL_DISCOVERY  = "jsl.comm.local.discovery";
-    public static final String JSLCOMM_LOCAL_DISCOVERY_DEF = "Auto";
 
     public static final String JSLCOMM_CLOUD_ENABLED    = "jsl.comm.cloud.enabled";
     public static final String JSLCOMM_CLOUD_ENABLED_DEF = "true";
@@ -248,6 +263,18 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
         return getBoolean(JSLCOMM_LOCAL_ENABLED, JSLCOMM_LOCAL_ENABLED_DEF);
     }
 
+    public boolean getLocalOnlySSLEnabled() {
+        return getBoolean(JSLCOMM_LOCAL_ONLY_SSL, JSLCOMM_LOCAL_ONLY_SSL_DEF);
+    }
+
+    public boolean getLocalOnlyNoSSLEnabled() {
+        return getBoolean(JSLCOMM_LOCAL_ONLY_NO_SSL, JSLCOMM_LOCAL_ONLY_NO_SSL_DEF);
+    }
+
+    public boolean getLocalSSLSharingEnabled() {
+        return getBoolean(JSLCOMM_LOCAL_SSL_SHARING_ENABLED, JSLCOMM_LOCAL_SSL_SHARING_ENABLED_DEF);
+    }
+
     public boolean getLocalOnlyLocalhost() {
         return getBoolean(JSLCOMM_LOCAL_ONLY_LOCALHOST, JSLCOMM_LOCAL_ONLY_LOCALHOST_DEF);
     }
@@ -265,13 +292,6 @@ public class JSLSettings_002 extends DefaultSettings implements JSL.Settings {
 
     public String getLocalKeyStoreAlias() {
         return getString(JSLCOMM_LOCAL_KS_ALIAS, JSLCOMM_LOCAL_KS_ALIAS_DEF);
-    }
-
-    public String getLocalKeyStoreDefaultPath() {
-        String path = getString(JSLCOMM_LOCAL_KS_DEF_PATH, JSLCOMM_LOCAL_KS_DEF_PATH_DEF);
-        if (!Paths.get(path).isAbsolute())
-            path = Paths.get(getSrvBaseDir(), path).toString();
-        return path;
     }
 
     public String getJSLDiscovery() {
