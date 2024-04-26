@@ -1,6 +1,7 @@
-# JSL TODOs
+# JOSP Service Library - TODOs
 
 [README](README.md) | [SPECS](docs/specs.md) | [GUIDES](docs/guides.md) | [CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
+
 
 * Communication
   * Add local comm methods to JSLCommunication, like the JODCommunication class

@@ -74,13 +74,13 @@ public interface JSLUserMngr {
 
     // User's settings
 
-    // ToDo: implements user's specific settings (local/cloud)
+    // ToDo: Implements user's specific settings (local/cloud)
     // String getUserSetting(String key);
 
 
     // User/Service settings
 
-    // ToDo: implements user's related to current service settings (local/cloud)
+    // ToDo: Implements user's related to current service settings (local/cloud)
     // String getUserSrvSetting(String key);
 
 

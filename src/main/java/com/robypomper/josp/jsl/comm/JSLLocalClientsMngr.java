@@ -89,7 +89,7 @@ import java.util.concurrent.CountDownLatch;
  * Discovered JOD Object's services and available clients can be retrieved using
  * the {@link #getDiscoveredServices()} and {@link #getLocalClients()} methods.
  * <p>
- * TODO: move backup connections from DefaultObjComm to here
+ * TODO: move backup connections from DefaultObjComm to JSLLocalClientsMngr
  */
 @SuppressWarnings("UnnecessaryReturnStatement")
 public class JSLLocalClientsMngr {
@@ -619,8 +619,8 @@ public class JSLLocalClientsMngr {
             log.debug(String.format("%s Connecting to discovered JOD Object's service '%s' using ENCRYPTED connection", discoveryLUID(discSrv), discSrv.name));
 
             JSLLocalClient localClient = new JSLLocalClientSSLShare(this, srvInfo.getFullId(),
-                        discSrv.address, discSrv.port,  // ToDo: Give also discSrv.intf, so client can bind right interface
-                        discSrv.name,                   // ToDo: this should be the remoteObjId
+                        discSrv.address, discSrv.port,  // ToDo: JSLLocalClientsMngr must give also discSrv.intf to the JSLLocalClientSSLShare constructor, so client can bind right interface
+                        discSrv.name,                   // ToDo: Replace discSrv.name with remoteObjId into JSLLocalClientsMngr::processDiscovered()
                         localClientListener,
                         sslSharingEnabled,
                         sslCtx, clientCertificate, trustManager);
@@ -824,7 +824,7 @@ public class JSLLocalClientsMngr {
             return;
         }
 
-        // TODO fix missing backup clients
+        // TODO Fix missing backup clients in JSLLocalClientsMngr::processOnDisconnected()
         // If remote object is NOT locally connected, look for a backup client and connect it
         assert !remObj.getComm().isLocalConnected() : "Remote object must be disconnected locally";
         if (isRunning())
@@ -869,7 +869,7 @@ public class JSLLocalClientsMngr {
         connectionsRemoteObjects.remove(client);
         String rObjID = connectionsObjectIDs.remove(client);
 
-        // TODO: analyze the error and print adeguate logging message
+        // TODO: Analyze the error and print adeguate logging message in JSLLocalClientsMngr::processOnFail()
         log.warn(String.format("%s Error on '%s' connection: [%s]", LUID(client), client, rObjID));
 
         emit_LocalConnectionError(client, e);

@@ -68,7 +68,7 @@ public class DefaultJSLComponentPath implements JSLComponentPath {
      * @param child the children name.
      */
     public DefaultJSLComponentPath(JSLComponentPath path, String child) {
-        // ToDo: check behaviour with not Unique path (focus on ...>* paths)
+        // ToDo: Check DefaultJSLComponentPath constructor behaviour with not Unique path (focus on ...>* paths)
         this((path.getString().compareTo(StructureDefinitions.PATH_STR_ROOT) == 0 ? "" : path.getString() + StructureDefinitions.PATH_SEP) + child);
     }
 

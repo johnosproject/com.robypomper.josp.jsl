@@ -27,8 +27,10 @@ import java.util.*;
  * instance.
  * <p>
  * This class collect all listeners and when a JSL instance becomes available,
- * it starts acting as a bridge between the linkd JSL instance and the registered
+ * it starts acting as a bridge between the linked JSL instance and the registered
  * listeners.
+ *
+ * TODO Convert publicXYListeners into maps, to allow registrations specific for object's id
  */
 @SuppressWarnings("unused")
 public class JSLListeners {
