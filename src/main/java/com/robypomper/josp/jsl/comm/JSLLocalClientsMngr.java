@@ -430,7 +430,7 @@ public class JSLLocalClientsMngr {
      * @return true if message was processed successfully, false otherwise.
      */
     public boolean processFromObjectMsg(JSLLocalClient client, String msg, JOSPPerm.Connection connType) {
-        log.warn(String.format("Received message from object %s: %s", connectionsObjectIDs.get(client), msg));
+        log.trace(String.format("Received message from object %s: %s", connectionsObjectIDs.get(client), msg));
         return jslComm.processFromObjectMsg(msg, connType);
     }
 

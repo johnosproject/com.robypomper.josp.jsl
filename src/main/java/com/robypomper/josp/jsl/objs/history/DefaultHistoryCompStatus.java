@@ -114,8 +114,6 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     public boolean processHistoryCompStatusMsg(String msg) {
         // Received StatusHistory message
-        System.out.println(String.format("Received StatusHistory Message for %s component on %s object", getComponent().getName(), getRemote().getName()));
-
         String objId;
         String fullSrvId;
         String compPathStr;
