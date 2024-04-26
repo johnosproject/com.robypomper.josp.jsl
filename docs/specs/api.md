@@ -1,6 +1,4 @@
-# JSL - Specs: API
-
-[README](../../README.md) | [SPECS](../specs.md) | [GUIDES](../guides.md) | [CHANGELOG](../../CHANGELOG.md) | [TODOs](../../TODOs.md) | [LICENCE](../../LICENCE.md)
+# JOSP Service Library -Specs: API
 
 Once initialize, the JSL library provide you an instance of the [JSL](#jsl)
 object. From this object, you can access to different sub-systems:
@@ -20,12 +18,12 @@ used to test environments and objects via command line interface.
 ...
 
 
-## Objects manager
+## Service info
 
 ...
 
 
-## Remote objects
+## User
 
 ...
 
@@ -35,16 +33,12 @@ used to test environments and objects via command line interface.
 ...
 
 
-## User manager
+## Objects manager
 
 ...
 
 
-## Service info
+## Remote objects
 
 ...
 
-
-## Admin
-
-...

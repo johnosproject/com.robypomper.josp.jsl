@@ -1,6 +1,7 @@
-# JSL LICENCE
+# JOSP Service Library - Licence
 
 [README](README.md) | [SPECS](docs/specs.md) | [GUIDES](docs/guides.md) | [CHANGELOG](CHANGELOG.md) | [TODOs](TODOs.md) | [LICENCE](LICENCE.md)
+
 
 The John Service Library is the software library to connect "software" to
 an IoT EcoSystem, like the John Operating System Platform one.
