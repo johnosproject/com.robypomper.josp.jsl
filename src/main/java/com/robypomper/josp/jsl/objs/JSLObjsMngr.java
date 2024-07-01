@@ -64,12 +64,6 @@ public interface JSLObjsMngr {
     JSLRemoteObject getById(String objId);
 
     /**
-     * @param client required object's local connection.
-     * @return the object associated to given local connection, null if not found.
-     */
-    JSLRemoteObject getByConnection(JSLLocalClient client);
-
-    /**
      * @param model required object's model.
      * @return the object associated to given local connection, null if not found.
      */
@@ -83,34 +77,22 @@ public interface JSLObjsMngr {
     List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern);
 
 
+    // Objects mngm
+
+    /**
+     * Create a new {@link JSLRemoteObject} instance.
+     * <p>
+     * This method is call by {@link JSLCommunication} system when it receives a
+     * new connection to an unknown JOD Object.
+     *
+     * @param objectConnection the open local connection to JOD object.
+     * @param remoteObjId      the object's id that the local connection is connected
+     * @return created object.
+     */
+    JSLRemoteObject createNewRemoteObject(JSLLocalClient objectConnection, String remoteObjId);
+
+
     // Connections mngm
-
-    /**
-     * Associate given connection to corresponding {@link JSLRemoteObject}.
-     * <p>
-     * This method is call by {@link JSLCommunication} system when it opens a
-     * local connection with a JOD Object.
-     * <p>
-     * If there is no {@link JSLRemoteObject} yet, it will be created.
-     *
-     * @param serverConnection the open local connection to JOD object.
-     * @param locConnObjId     the object's id that the local connection is connected
-     * @return created or connected object.
-     */
-    JSLRemoteObject addNewConnection(JSLLocalClient serverConnection, String locConnObjId);
-
-    /**
-     * Remove given connection to corresponding {@link JSLRemoteObject}.
-     * <p>
-     * This method is call by {@link JSLCommunication} system when it close (or
-     * detect that is closed) a local connection with a JOD Object.
-     * <p>
-     * If there is no {@link JSLRemoteObject} yet, it will be created anyway and
-     * set offline.
-     *
-     * @param localConnection the closed local connection to JOD object.
-     */
-    boolean removeConnection(JSLLocalClient localConnection);
 
     void setCommunication(JSLCommunication communication);
 

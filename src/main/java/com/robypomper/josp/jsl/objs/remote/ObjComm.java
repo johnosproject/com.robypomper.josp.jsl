@@ -22,6 +22,8 @@ import com.robypomper.josp.jsl.comm.JSLCommunication;
 import com.robypomper.josp.jsl.comm.JSLLocalClient;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 
+import java.util.List;
+
 public interface ObjComm {
 
     // Getters
@@ -45,6 +47,20 @@ public interface ObjComm {
      * open connection to the object.
      */
     boolean isLocalConnected();
+
+    /**
+     * @return the active local connection to the object.
+     * if the object is disconnected or works only via cloud, then the
+     * returned value will be null.
+     */
+    JSLLocalClient getActiveLocalClient();
+
+    /**
+     * @return a list containing all available local connections to the object.
+     * if the object is disconnected or works only via cloud, then the
+     * returned array will be empty.
+     */
+    List<JSLLocalClient> getLocalBackupClients();
 
 
     // Listeners

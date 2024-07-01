@@ -87,7 +87,7 @@ public class ObjBase {
                 throw new JSLRemoteObject.MissingPermission(getRemote(), JOSPPerm.Connection.OnlyLocal, permType, minReqPerm, msg);
 
             try {
-                ((DefaultObjComm) getRemote().getComm()).getConnectedLocalClient().sendData(msg);
+                getRemote().getComm().getActiveLocalClient().sendData(msg);
                 return;
 
             } catch (PeerNotConnectedException | PeerStreamException e) {
@@ -108,6 +108,14 @@ public class ObjBase {
                 log.warn(String.format("Error on sending message '%s' to object (via cloud) because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
             }
         }
+    }
+
+
+    // Protected logging methods
+
+    protected String getLogRO() {
+        return String.format("[RObj: %s]", getRemote().getId());
+        // return String.format("'%s' (%s)", getRemote().getName(), getRemote().getId());
     }
 
 }

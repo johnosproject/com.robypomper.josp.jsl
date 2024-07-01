@@ -28,6 +28,7 @@ public class JSLLocalClientNoSSL extends ClientAbsTCP implements JSLLocalClient 
         addListener(localClientListener);
     }
 
+
     // Message methods
 
     @Override
@@ -38,6 +39,13 @@ public class JSLLocalClientNoSSL extends ClientAbsTCP implements JSLLocalClient 
     @Override
     protected boolean processData(String data) {
         return clientsMngr.processFromObjectMsg(this, data, JOSPPerm.Connection.OnlyLocal);
+    }
+
+    // JSL Local Client methods
+
+    @Override
+    public JSLRemoteObject getRemoteObject() {
+        return remoteObject;
     }
 
     // JSL Local Client methods

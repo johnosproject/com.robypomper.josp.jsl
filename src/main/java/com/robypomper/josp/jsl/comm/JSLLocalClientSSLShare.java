@@ -73,6 +73,7 @@ public class JSLLocalClientSSLShare extends ClientAbsSSL implements JSLLocalClie
         this.security = JOSPSecurityLevel.calculate(true, serverIsSSLShare, isServerCertificateFull);
     }
 
+
     // Message methods
 
     @Override
@@ -87,6 +88,11 @@ public class JSLLocalClientSSLShare extends ClientAbsSSL implements JSLLocalClie
 
 
     // JSL Local Client methods
+
+    @Override
+    public JSLRemoteObject getRemoteObject() {
+        return remoteObject;
+    }
 
     /**
      * When created, add corresponding JSLRemoteObject to current local client.

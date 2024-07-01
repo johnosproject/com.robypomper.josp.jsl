@@ -195,6 +195,16 @@ public class JSLLocalClientsMngr {
      */
     private final Map<JSLLocalClient, JSLRemoteObject> connectionsRemoteObjects = new HashMap<>();
     /**
+     * Contains all backup object's connection
+     * <p>
+     * A backup connection is added when a new connection is established [Phase 2] (processOnConnected()).
+     * but the object is already locally connected.
+     * A backup connection is removed when the re-connection attempt fails (processOnDisconnected()).
+     * <p>
+     * It is reset on manager stop.
+     */
+    private final Map<JSLLocalClient, JSLRemoteObject> backupConnections = new HashMap<>();
+    /**
      * Listeners for CommLocalStateListener events.
      */
     private final List<CommLocalStateListener> statusListeners = new ArrayList<>();
@@ -449,6 +459,24 @@ public class JSLLocalClientsMngr {
         return new ArrayList<>(availableConnections.keySet());
     }
 
+    /**
+     * @return get the only one (if any) ready connection for the given object.
+     */
+    public JSLLocalClient getActiveLocalClientByObject(JSLRemoteObject remObj) {
+        for (JSLLocalClient client : connectionsRemoteObjects.keySet())
+            if (connectionsRemoteObjects.get(client).equals(remObj))
+                return client;
+        return null;
+    }
+
+    public List<JSLLocalClient> getLocalBackupClientsByObject(JSLRemoteObject remObj) {
+        List<JSLLocalClient> clients = new ArrayList<>();
+        for (JSLLocalClient client : backupConnections.keySet())
+            if (backupConnections.get(client).equals(remObj))
+                clients.add(client);
+        return clients;
+    }
+
 
     // Certificates mngm
 
@@ -554,6 +582,11 @@ public class JSLLocalClientsMngr {
     }
 
     private void onConnectionDisconnected(JSLLocalClient client) {
+        if (backupConnections.containsKey(client))
+            return; // Backup connection, do not process disconnection
+        if (!connectionsObjectIDs.containsKey(client))
+            return; // Connection not ready, do not process disconnection
+
         processOnDisconnected(client);
     }
 
@@ -573,7 +606,8 @@ public class JSLLocalClientsMngr {
         log.debug(String.format("%s Phase1 Discovered JOD Object's service '%s' at '%s:%d' on '%s' interface by '%s' service", discoveryLUID(discSrv), discSrv.name, discSrv.address, discSrv.port, discSrv.intf, srvInfo.getSrvId()));
         log.info(String.format("%s Discovered Remote Object service %s at '%s:%d'", discoveryLUID(discSrv), discSrv.name, discSrv.address, discSrv.port));
 
-        if (availableDiscoveryServices.contains(discSrv)) {
+        DiscoveryService discSrv2 = discSrv.extractFrom(new ArrayList<>(connectionsDiscoveryServices.values()));
+        if (discSrv2 != null) {
             log.info(String.format("%s Discovered JOD Object's service '%s' already know, skipped", discoveryLUID(discSrv), discSrv.name));
             return;
         }
@@ -605,7 +639,7 @@ public class JSLLocalClientsMngr {
                 localClient.connect();
             } catch (PeerConnectionException e) {
                 errorOnConnect = true;
-                if (e.getMessage().contains("SSL handshake failed"))
+                if (e.getMessage().contains("SSL handshake failed") || e.getMessage().contains("CertSharing can't connect"))
                     log.debug(String.format("%s Discovered JOD Object's '%s' service do not support ENCRYPTED connection", discoveryLUID(discSrv), discSrv.name));
                 else
                     log.warn(String.format("%s %s using ENCRYPTED connection, %s", discoveryLUID(discSrv), e.getMessage(), discSrv.name));
@@ -673,9 +707,13 @@ public class JSLLocalClientsMngr {
     }
 
     private void processOnLost(DiscoveryService lostSrv) {
+        // Check lost service's connection
         // remove lost service from local discovered
-        availableDiscoveryServices.remove(lostSrv);
-        log.debug(String.format("%s Lost JOD Object '%s' at '%s:%d' lost", discoveryLUID(lostSrv), lostSrv.name, lostSrv.address, lostSrv.port));
+        DiscoveryService lostSrv2 = lostSrv.extractFrom(availableDiscoveryServices);
+        if (lostSrv2 == null)
+            return; // Service not found (already removed)
+        availableDiscoveryServices.remove(lostSrv2);
+        log.debug(String.format("%s Lost JOD Object's service '%s' at '%s:%d' lost", discoveryLUID(lostSrv2), lostSrv2.name, lostSrv2.address, lostSrv2.port));
     }
 
     private void processOnConnected(JSLLocalClient client) {
@@ -691,17 +729,41 @@ public class JSLLocalClientsMngr {
         log.debug(String.format("%s Phase2 Connection established to JOD Object's service '%s'", discoveryLUID(discSrv), discSrv.name));
         availableConnections.put(client, false);
         registerLUID(client);
-        log.info(String.format("%s > %s New connection to server '%s' for discovery JOD Object's service '%s'", discoveryLUID(discSrv), LUID(client), client.getConnectionInfo().getRemoteInfo(), discSrv.name));
+        log.info(String.format("%s > %s New connection for Discovered Remote Object service '%s' at '%s'", discoveryLUID(discSrv), LUID(client), client.getConnectionInfo().getRemoteInfo(), discSrv.name));
+        //log.info(String.format("%s > %s New connection to server '%s' for discovery JOD Object's service '%s'", discoveryLUID(discSrv), LUID(client), client.getConnectionInfo().getRemoteInfo(), discSrv.name));
 
         // Get object's id from server
         String remObjId;
         try {
             remObjId = getOrWaitObjectId(client);
-            log.debug(String.format("%s Get object's id `%s` from server '%s:%d'.", discoveryLUID(discSrv), remObjId, client.getSocket().getInetAddress(), client.getSocket().getPort()));
         } catch (IOException e) {
             log.warn(String.format("%s Error on getting object's id from discovered JOD Object's service '%s' (%s), discharge connection.", LUID(client), discSrv.name, e));
             availableConnections.remove(client);
             deregisterLUID(client);
+            return;
+        }
+        log.info(String.format("%s Connection associated to the JOD Object %s with %s", LUID(client), remObjId, client.getSecurityLevel()));
+
+        // Get the remote object from the ObjsMngr
+        JSLRemoteObject remObj = jslObjsMngr.getById(remObjId);
+        if (remObj == null)
+            remObj = jslObjsMngr.createNewRemoteObject(client, remObjId);
+        client.setRemoteObject(remObj);
+
+        // Check if the object is already connected locally
+        if (remObj.getComm().isLocalConnected()) {
+            // Connection for already connected remote object
+            JSLLocalClient oldClient = getActiveLocalClientByObject(remObj);
+            assert oldClient != null;
+            assert oldClient.getState().isConnected();
+
+            log.warn(String.format("%s Remote Object '%s' already connected locally, set new connection as backup and close it.", LUID(client), remObjId));
+            availableConnections.remove(client);
+            backupConnections.put(client, remObj);
+            JavaThreads.softSleep(100);         // Force switch thread, to allow starting client's thread
+            try {
+                client.disconnect();
+            } catch (PeerDisconnectionException ignore) {}
             return;
         }
 
@@ -710,25 +772,25 @@ public class JSLLocalClientsMngr {
         connectionsObjectIDs.put(client, remObjId);
 
         // pass the connection to the ObjsMngr -> it will use/close it depending on object's connection status
-        JSLRemoteObject remObj = jslObjsMngr.addNewConnection(client, remObjId);
-        if (remObj == null) {
-            log.warn(String.format("%s Error on generating Remote Object JOD Object (%s), discharge connection.", LUID(client), remObjId));
-            connectionsObjectIDs.remove(client);
-            availableConnections.remove(client);
-            deregisterLUID(client);
-            try {
-                client.disconnect();
-            } catch (PeerDisconnectionException ignore) {}
-            emit_LocalConnectionError(client, String.format("Can't create localClient object for server %s", client.getRemoteId()));
-            return;
-        }
+        //JSLRemoteObject remObj = jslObjsMngr.addNewConnection(client, remObjId);
+        //if (remObj == null) {
+        //    log.warn(String.format("%s Error on generating Remote Object JOD Object (%s), discharge connection.", LUID(client), remObjId));
+        //    connectionsObjectIDs.remove(client);
+        //    availableConnections.remove(client);
+        //    deregisterLUID(client);
+        //    try {
+        //        client.disconnect();
+        //    } catch (PeerDisconnectionException ignore) {}
+        //    emit_LocalConnectionError(client, String.format("Can't create localClient object for server %s", client.getRemoteId()));
+        //    return;
+        //}
 
         // If local client is NoSSL or local SSL certificate is partial
         //   Send service's fullId message to server
         if (client instanceof JSLLocalClientNoSSL
                 || !isLocalCertificateFull()) {
             String msg = srvInfo.getFullId() + "\n";
-            log.info(String.format("%s Sending message '%s' to JOD Object (%s) via local communication", LUID(client), msg.substring(0, msg.indexOf('\n')), remObjId));
+            log.info(String.format("%s Sending JSL ID message '%s' to JOD Object (%s) via local communication", LUID(client), msg.substring(0, msg.indexOf('\n')), remObjId));
 
             // Send service's fullId message to server
             try {
@@ -772,27 +834,27 @@ public class JSLLocalClientsMngr {
 
         // TODO fix missing backup clients
         // If remote object is NOT locally connected, look for a backup client and connect it
-        if (!remObj.getComm().isLocalConnected()) {
-            List<JSLLocalClient> objClients = ((DefaultObjComm) remObj.getComm()).getLocalClients();
-            for (JSLLocalClient obCli : objClients) {
+        assert !remObj.getComm().isLocalConnected() : "Remote object must be disconnected locally";
+        if (isRunning())
+            for (JSLLocalClient backupClient : getLocalBackupClientsByObject(remObj))
                 try {
-                    obCli.connect();
+                    backupClient.connect();
                     break;
+
                 } catch (PeerConnectionException e) {
                     log.warn(String.format("%s Remote Object %s (%s) re-connection '%s:%d' attempt failed because [%s] %s",
                             LUID(client),
                             remObj.getName(), remObj.getId(),
-                            obCli.getConnectionInfo().getRemoteInfo().getAddr(),
-                            obCli.getConnectionInfo().getRemoteInfo().getPort(),
+                            backupClient.getConnectionInfo().getRemoteInfo().getAddr(),
+                            backupClient.getConnectionInfo().getRemoteInfo().getPort(),
                             e.getClass().getSimpleName(), e));
+                    backupConnections.remove(backupClient);
                 }
-            }
-        }
 
         // If remote object has been re-connected locally
         if (remObj.getComm().isLocalConnected()) {
             // Log "connection switch"
-            ConnectionInfo newConnection = ((DefaultObjComm) remObj.getComm()).getConnectedLocalClient().getConnectionInfo();
+            ConnectionInfo newConnection = remObj.getComm().getActiveLocalClient().getConnectionInfo();
             log.info(String.format("%s Remote Object %s (%s) switched connection to '%s:%d'",
                     LUID(client),
                     remObj.getName(), remObj.getId(),
