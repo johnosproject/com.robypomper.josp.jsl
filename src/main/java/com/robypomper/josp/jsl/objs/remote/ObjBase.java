@@ -110,4 +110,12 @@ public class ObjBase {
         }
     }
 
+
+    // Protected logging methods
+
+    protected String getLogRO() {
+        return String.format("[RObj: %s]", getRemote().getId());
+        // return String.format("'%s' (%s)", getRemote().getName(), getRemote().getId());
+    }
+
 }

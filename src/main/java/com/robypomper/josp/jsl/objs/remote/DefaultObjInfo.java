@@ -128,7 +128,7 @@ public class DefaultObjInfo extends ObjBase implements ObjInfo {
 
     // Processing
 
-    public boolean processObjectInfoMsg(String msg, JOSPPerm.Connection connType) throws Throwable {
+    public boolean processObjectInfoMsg(String msg, JOSPPerm.Connection connType) {
         try {
             String newName = JOSPProtocol_ObjectToService.getObjectInfoMsg_Name(msg);
             if (name == null || !name.equals(newName)) {
@@ -173,7 +173,9 @@ public class DefaultObjInfo extends ObjBase implements ObjInfo {
             }
 
         } catch (JOSPProtocol.ParsingException e) {
-            throw new Throwable(String.format("Error on processing ObjectInfo message for '%s' object because %s", getRemote().getId(), e.getMessage()), e);
+            log.warn(String.format("%s Error on processing ObjectInfo message '%s...' for '%s' object because %s",
+                    getLogRO(), msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
+            return false;
         }
 
         return true;

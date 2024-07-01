@@ -21,6 +21,7 @@ package com.robypomper.josp.jsl.objs.remote;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
+import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.protocol.JOSPProtocol_ObjectToService;
 import com.robypomper.josp.protocol.JOSPProtocol_ServiceToObject;
 import org.slf4j.Logger;
@@ -94,19 +95,39 @@ public class DefaultObjPerms extends ObjBase implements ObjPerms {
 
     // Processing
 
-    public boolean processObjectPermsMsg(String msg) throws Throwable {
+    public boolean processObjectPermsMsg(String msg) {
         List<JOSPPerm> oldPerms = perms;
-        perms = JOSPProtocol_ObjectToService.getObjectPermsMsg_Perms(msg);
+        try {
+            perms = JOSPProtocol_ObjectToService.getObjectPermsMsg_Perms(msg);
+
+        } catch (JOSPProtocol.ParsingException e) {
+            log.warn(String.format("%s Error on processing ObjectPerms message '%s...' for '%s' object because %s",
+                    getLogRO(), msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
+            return false;
+        }
+
         emitInfo_PermissionsChanged(perms, oldPerms);
         return true;
     }
 
-    public boolean processServicePermMsg(String msg) throws Throwable {
-        JOSPPerm.Connection connType = JOSPProtocol_ObjectToService.getServicePermsMsg_ConnType(msg);
+    public boolean processServicePermMsg(String msg) {
+        JOSPPerm.Connection connType;
+        JOSPPerm.Type permType;
+        try {
+            connType = JOSPProtocol_ObjectToService.getServicePermsMsg_ConnType(msg);
+            permType = JOSPProtocol_ObjectToService.getServicePermsMsg_PermType(msg);
+
+        } catch (JOSPProtocol.ParsingException e) {
+            log.warn(String.format("%s Error on processing ServicePerms message '%s...' for '%s' object because %s",
+                    getLogRO(), msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
+            return false;
+        }
+
         JOSPPerm.Type oldPermType = permTypes.get(connType);
-        permTypes.put(connType, JOSPProtocol_ObjectToService.getServicePermsMsg_PermType(msg));
+        permTypes.put(connType, permType);
         emitInfo_ServicePermChanged(connType, permTypes.get(connType), oldPermType);
         return true;
+
     }
 
 

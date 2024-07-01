@@ -90,25 +90,29 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
     // Processing
 
     public boolean processObjectStructMsg(String msg) {
+        String msgSubStr = msg.substring(0, Math.min(10, msg.length()));
+        ObjectMapper mapper = new ObjectMapper();
+        String structStr;
+
         try {
-            String structStr = JOSPProtocol_ObjectToService.getObjectStructMsg_Struct(msg);
-            try {
-                ObjectMapper mapper = new ObjectMapper();
+            structStr = JOSPProtocol_ObjectToService.getObjectStructMsg_Struct(msg);
+            InjectableValues.Std injectVars = new InjectableValues.Std();
+            injectVars.addValue(JSLRemoteObject.class, getRemote());
+            mapper.setInjectableValues(injectVars);
 
-                InjectableValues.Std injectVars = new InjectableValues.Std();
-                injectVars.addValue(JSLRemoteObject.class, getRemote());
-                mapper.setInjectableValues(injectVars);
-                root = mapper.readValue(structStr, JSLRoot_Jackson.class);
+        } catch (JOSPProtocol.ParsingException e) {
+            log.warn(String.format("%s Error on processing ObjectStructure message '%s...' for '%s' object because %s",
+                    getLogRO(), msgSubStr, getRemote().getId(), e.getMessage()), e);
+            return false;
+        }
 
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                String errMsg = String.format("Can't init JOD Structure, error on parsing JSON: '%s'.", e.getMessage().substring(0, e.getMessage().indexOf('\n')));
-                throw new JSLRemoteObject.ParsingException(getRemote(), errMsg, e, e.getLocation().getLineNr(), e.getLocation().getColumnNr());
-            }
+        try {
+            root = mapper.readValue(structStr, JSLRoot_Jackson.class);
 
-        } catch (JOSPProtocol.ParsingException | JSLRemoteObject.ParsingException e) {
-            log.warn(String.format("Error on processing ObjectStructure message '%s...' for '%s' object because %s", msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
-            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            log.warn(String.format("%s Error on processing ObjectStructure message '%s...' for '%s' object because %s",
+                    getLogRO(), msgSubStr, getRemote().getId(), e.getMessage()), e);
+            return false;
         }
 
         emitInfo_StructureChanged(root);
@@ -116,12 +120,15 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
     }
 
     public boolean processObjectUpdMsg(String msg) {
+        String msgSubStr = msg.substring(0, Math.min(10, msg.length()));
+
         // parse received data
         JOSPProtocol.StatusUpd upd;
         try {
             upd = JOSPProtocol.fromMsgToUpd(msg, AbsJSLState.getStateClasses());
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
+            log.warn(String.format("%s Error on parsing update '%s...' because %s",
+                    getLogRO(), msgSubStr, e.getMessage()), e);
             return false;
         }
         // search destination object/components
@@ -129,13 +136,16 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
         JSLComponent comp = DefaultJSLComponentPath.searchComponent(getStructure(), compPath);
 
         // forward update msg
-        log.trace(String.format("Processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+        log.trace(String.format("%s Processing update on '%s' component for '%s' object",
+                getLogRO(), compPath.getString(), getRemote().getId()));
         if (comp == null) {
-            log.warn(String.format("Error on processing update on '%s' component for '%s' object because component not found", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("%s Error on processing update on '%s' component for '%s' object because component not found",
+                    getLogRO(), compPath.getString(), getRemote().getId()));
             return false;
         }
         if (!(comp instanceof JSLState)) {
-            log.warn(String.format("Error on processing update on '%s' component for '%s' object because component not a status component", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("%s Error on processing update on '%s' component for '%s' object because component not a status component",
+                    getLogRO(), compPath.getString(), getRemote().getId()));
             return false;
         }
         JSLState stateComp = (JSLState) comp;
@@ -147,23 +157,29 @@ public class DefaultObjStruct extends ObjBase implements ObjStruct {
                 state = Boolean.toString(((JSLBooleanState)stateComp).getState());
             else if (stateComp instanceof JSLRangeState)
                 state = Double.toString(((JSLRangeState)stateComp).getState());
-            log.info(String.format("Updated status of '%s' component with value '%s' for '%s' object", compPath.getString(), state, getRemote().getId()));
+            log.info(String.format("%s Updated status of '%s' component with value '%s' for '%s' object",
+                    getLogRO(), compPath.getString(), state, getRemote().getId()));
 
         } else {
-            log.warn(String.format("Error on processing update on '%s' component for '%s' object", compPath.getString(), getRemote().getId()));
+            log.warn(String.format("%s Error on processing update on '%s' component for '%s' object",
+                    getLogRO(), compPath.getString(), getRemote().getId()));
             return false;
         }
 
-        log.trace(String.format("Update '%s...' processed for '%s' object", msg.substring(0, Math.min(10, msg.length())), getRemote().getId()));
+        log.trace(String.format("%s Update '%s...' processed for '%s' object",
+                getLogRO(), msgSubStr, getRemote().getId()));
         return true;
     }
 
     public boolean processHistoryCompStatusMsg(String msg) {
+        String msgSubStr = msg.substring(0, Math.min(10, msg.length()));
+
         String compPath;
         try {
             compPath = JOSPProtocol_ObjectToService.getHistoryResMsg_CompPath(msg);
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(String.format("Error on parsing update '%s...' because %s", msg.substring(0, msg.indexOf("\n")), e.getMessage()), e);
+            log.warn(String.format("%s Error on parsing update '%s...' because %s",
+                    getLogRO(), msgSubStr, e.getMessage()), e);
             return false;
         }
         JSLComponent component = getComponent(compPath);
