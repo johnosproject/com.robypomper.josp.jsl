@@ -108,18 +108,6 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      * {@inheritDoc}
      */
     @Override
-    public JSLRemoteObject getByConnection(JSLLocalClient client) {
-        for (JSLRemoteObject obj : objs)
-            if (((DefaultObjComm) obj.getComm()).getLocalClients().contains(client))
-                return obj;
-
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public List<JSLRemoteObject> getByModel(String model) {
         List<JSLRemoteObject> filteredObjs = new ArrayList<>();
         for (JSLRemoteObject obj : objs)
@@ -158,21 +146,42 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      * {@inheritDoc}
      */
     @Override
+    public JSLRemoteObject createNewRemoteObject(JSLLocalClient objectConnection, String remoteObjId) {
+        log.debug(String.format("Register new object '%s' with connection (%s:%d) from '%s' service", remoteObjId, objectConnection.getSocket().getInetAddress(), objectConnection.getSocket().getPort(), srvInfo.getSrvId()));
+        JSLRemoteObject remObj;
+        synchronized (objs) {
+            remObj = getById(remoteObjId);
+            assert remObj == null : "Method createNewRemoteObject() can be called only if object is not already registered.";
+            remObj = new DefaultJSLRemoteObject(srvInfo, remoteObjId, communication);
+            objs.add(remObj);
+        }
+
+        remObj.getPerms().addListener(objectPermsListener);
+        emit_ObjAdded(remObj);
+
+        return remObj;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    //@Override
+    @Deprecated
     public JSLRemoteObject addNewConnection(JSLLocalClient serverConnection, String locConnObjId) {
-        assert serverConnection.getState().isConnected() : "Method addLocalClient() can be call only if localClient is connected.";
+        assert serverConnection.getState().isConnected() : "Method addLocalClient() can be called only if localClient is connected.";
 
         log.debug(String.format("Register object '%s' new connection (%s:%d) from '%s' service", locConnObjId, serverConnection.getSocket().getInetAddress(), serverConnection.getSocket().getPort(), srvInfo.getSrvId()));
         JSLRemoteObject remObj;
         synchronized (objs) {
             remObj = getById(locConnObjId);
             if (remObj == null) {
-                remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, serverConnection, communication);
+                remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, communication);
                 objs.add(remObj);
                 remObj.getPerms().addListener(objectPermsListener);
                 emit_ObjAdded(remObj);
 
             } else {
-                ((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
+                //((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
             }
         }
 
@@ -182,10 +191,23 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean removeConnection(JSLLocalClient client) {
-        log.warn("Method removeConnection(...) not implemented, return false");
-        return false;
+    //@Override
+    @Deprecated
+    public boolean removeConnection(JSLLocalClient serverConnection) {
+        assert serverConnection.getRemoteObject() != null : "Method removeConnection() can be called only if localClient was connected successfully.";
+        assert !serverConnection.getState().isConnected() : "Method removeConnection() can be called only if localClient is NOT connected.";
+
+        String locConnObjId = serverConnection.getRemoteObject().getId();
+        log.debug(String.format("Deregister object '%s' closed connection (%s:%d) from '%s' service", locConnObjId, serverConnection.getSocket().getInetAddress(), serverConnection.getSocket().getPort(), srvInfo.getSrvId()));
+        JSLRemoteObject remObj;
+        synchronized (objs) {
+            remObj = getById(locConnObjId);
+            if (remObj == null)
+                return false;
+            //((DefaultObjComm) remObj.getComm()).removeLocalClient(serverConnection);
+        }
+
+        return true;
     }
 
     /**
