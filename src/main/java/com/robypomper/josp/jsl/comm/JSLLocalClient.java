@@ -9,6 +9,8 @@ public interface JSLLocalClient extends Peer {
 
     void connect() throws PeerConnectionException;
 
+    JSLRemoteObject getRemoteObject();
+
     void setRemoteObject(JSLRemoteObject remote);
 
     /**
