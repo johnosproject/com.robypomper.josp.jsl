@@ -59,7 +59,12 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
      * @param communication instance of the {@link JSLCommunication}.
      */
     public DefaultJSLRemoteObject(JSLServiceInfo srvInfo, String objId, JSLCommunication communication) {
-        this(srvInfo,objId,null,communication);
+        objInfo = new DefaultObjInfo(this, srvInfo);
+        objStruct = new DefaultObjStruct(this, srvInfo);
+        objPerms = new DefaultObjPerms(this, srvInfo);
+        objComm = new DefaultObjComm(this, srvInfo, communication);
+
+        this.objId = objId;
     }
 
     /**
@@ -72,6 +77,7 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
      * @param localClient   the client connected with JOD object.
      * @param communication instance of the {@link JSLCommunication}.
      */
+    @Deprecated
     public DefaultJSLRemoteObject(JSLServiceInfo srvInfo, String objId, JSLLocalClient localClient, JSLCommunication communication) {
         objInfo = new DefaultObjInfo(this, srvInfo);
         objStruct = new DefaultObjStruct(this, srvInfo);
@@ -80,11 +86,13 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
 
         this.objId = objId;
 
+        /*
         if (localClient!=null) {
             objComm.addLocalClient(localClient);
             log.info(String.format("Initialized JSLRemoteObject '%s' (%s) on '%s' service (via direct connection: '%s')", objInfo.getName(), objId, srvInfo.getSrvId(), localClient.getConnectionInfo()));
         } else
             log.info(String.format("Initialized JSLRemoteObject '%s' (%s)  on '%s' service (via cloud connection)", objInfo.getName(), objId, srvInfo.getSrvId()));
+        */
     }
 
 

@@ -137,9 +137,8 @@ public class CmdsJSLObjsMngr {
 
         JSLGwS2OClient cloudClient = ((DefaultObjComm) obj.getComm()).getCloudConnection();
         s.append(String.format("- Cloud %-12s %s\n", getCloudObjState(cloudClient, obj), cloudClient));
-        for (JSLLocalClient client : ((DefaultObjComm) obj.getComm()).getLocalClients()) {
-            s.append(String.format("- Local %-12s %s\n", client.getState(), client));
-        }
+        JSLLocalClient client = ((DefaultObjComm) obj.getComm()).getActiveLocalClient();
+        s.append(String.format("- Local %-12s %s\n", client.getState(), client));
 
         return s.toString();
     }
@@ -812,7 +811,7 @@ public class CmdsJSLObjsMngr {
     }
 
     private String getLocalObjState(JSLRemoteObject obj) {
-        int allClients = ((DefaultObjComm) obj.getComm()).getLocalClients().size();
+        int allClients = ((DefaultObjComm) obj.getComm()).getLocalBackupClients().size();
         return obj.getComm().isLocalConnected() ? String.format("CONNECTED (%d)", allClients) : "DISCONNECTED";
     }
 

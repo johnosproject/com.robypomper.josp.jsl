@@ -158,7 +158,13 @@ public class CmdsJCPClient {
         if (!jcpClient.isAuthCodeFlowEnabled())
             return "User already logged out.";
 
-        jcpClient.userLogout();
+        try {
+            jcpClient.userLogout();
+        } catch (JCPClient2.AuthenticationException |
+                 JCPClient2.ResponseException | JCPClient2.RequestException |
+                 JCPClient2.ConnectionException e) {
+            return String.format("Can't proceed with user logout because %s", e.getMessage());
+        }
         return "User logged out successfully";
     }
 
