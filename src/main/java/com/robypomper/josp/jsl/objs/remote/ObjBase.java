@@ -87,7 +87,7 @@ public class ObjBase {
                 throw new JSLRemoteObject.MissingPermission(getRemote(), JOSPPerm.Connection.OnlyLocal, permType, minReqPerm, msg);
 
             try {
-                ((DefaultObjComm) getRemote().getComm()).getConnectedLocalClient().sendData(msg);
+                getRemote().getComm().getActiveLocalClient().sendData(msg);
                 return;
 
             } catch (PeerNotConnectedException | PeerStreamException e) {

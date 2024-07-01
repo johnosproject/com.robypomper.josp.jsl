@@ -68,8 +68,7 @@ public abstract class HistoryBase {
                 throw new JSLRemoteObject.MissingPermission(getRemote(), JOSPPerm.Connection.OnlyLocal, permType, minReqPerm, msg);
 
             try {
-                ((DefaultObjComm) getRemote().getComm()).getConnectedLocalClient().sendData(msg);
-                return;
+                getRemote().getComm().getActiveLocalClient().sendData(msg);
 
             } catch (PeerNotConnectedException | PeerStreamException e) {
                 log.warn(String.format("Error on sending message '%s' to object (via local) because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
