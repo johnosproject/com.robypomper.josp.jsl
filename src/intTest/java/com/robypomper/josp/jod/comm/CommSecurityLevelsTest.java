@@ -48,8 +48,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.*;
 import java.io.File;
-import java.net.SocketException;
-import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -160,7 +158,7 @@ public class CommSecurityLevelsTest {
     public void testLocal_NoSSL(
             @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
             @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
-    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException {
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, Discover.DiscoveryException, StateException {
 
 
         when(objInfo.getObjName()).thenReturn("TestObject");
@@ -168,7 +166,7 @@ public class CommSecurityLevelsTest {
         when(srvInfo.getSrvId()).thenReturn("srvId");
         when(srvInfo.getSrvName()).thenReturn("TestService");
         when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
-        when(jslObjsMngr.addNewConnection(any(), any())).thenReturn(jslRemoteObject);
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
         when(jslRemoteObject.getName()).thenReturn("TestObject");
         when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
         when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection
@@ -221,7 +219,7 @@ public class CommSecurityLevelsTest {
     public void testLocal_SSLShareComp(
             @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
             @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
-    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException, JavaJKS.GenerationException, JavaJKS.LoadingException, JavaJKS.StoreException {
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, Discover.DiscoveryException, StateException, JavaJKS.GenerationException {
 
 
         when(objInfo.getObjName()).thenReturn("TestObject");
@@ -229,7 +227,7 @@ public class CommSecurityLevelsTest {
         when(srvInfo.getSrvId()).thenReturn("srvId");
         when(srvInfo.getSrvName()).thenReturn("TestService");
         when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
-        when(jslObjsMngr.addNewConnection(any(), any())).thenReturn(jslRemoteObject);
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
         when(jslRemoteObject.getName()).thenReturn("TestObject");
         when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
         when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection
@@ -244,7 +242,7 @@ public class CommSecurityLevelsTest {
         jodSettings = new JODSettings_002(jodSettingsMap);
         Map<String, Object> jslSettingsMap = getDefaultJSLSettings();
         jslSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_ONLY_SSL, "true");
-        jodSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_SSL_SHARING_ENABLED, "true");
+        jslSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_SSL_SHARING_ENABLED, "true");
         // generate partial certificate for JSL
         JavaJKS.generateNewKeyStoreFile("MyServiceCertificate", JSL_KS_PATH, JSLSettings_002.JSLCOMM_LOCAL_KS_PASS_DEF, "srvId/usrId/instId-LocalCert");
         jslSettings = new JSLSettings_002(jslSettingsMap);
@@ -288,7 +286,7 @@ public class CommSecurityLevelsTest {
     public void testLocal_SSLComp(
             @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
             @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
-    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException, JavaJKS.GenerationException, JavaJKS.LoadingException, JavaJKS.StoreException, AbsCustomTrustManager.UpdateException {
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, Discover.DiscoveryException, StateException, JavaJKS.GenerationException, JavaJKS.LoadingException, AbsCustomTrustManager.UpdateException {
 
 
         when(objInfo.getObjName()).thenReturn("TestObject");
@@ -296,7 +294,7 @@ public class CommSecurityLevelsTest {
         when(srvInfo.getSrvId()).thenReturn("srvId");
         when(srvInfo.getSrvName()).thenReturn("TestService");
         when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
-        when(jslObjsMngr.addNewConnection(any(), any())).thenReturn(jslRemoteObject);
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
         when(jslRemoteObject.getName()).thenReturn("TestObject");
         when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
         when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection
@@ -366,7 +364,7 @@ public class CommSecurityLevelsTest {
     public void testLocal_SSLShareInstance(
             @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
             @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
-    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException {
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, Discover.DiscoveryException, StateException {
 
 
         when(objInfo.getObjName()).thenReturn("TestObject");
@@ -374,7 +372,7 @@ public class CommSecurityLevelsTest {
         when(srvInfo.getSrvId()).thenReturn("srvId");
         when(srvInfo.getSrvName()).thenReturn("TestService");
         when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
-        when(jslObjsMngr.addNewConnection(any(), any())).thenReturn(jslRemoteObject);
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
         when(jslRemoteObject.getName()).thenReturn("TestObject");
         when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
         when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection
@@ -388,7 +386,7 @@ public class CommSecurityLevelsTest {
         jodSettings = new JODSettings_002(jodSettingsMap);
         Map<String, Object> jslSettingsMap = getDefaultJSLSettings();
         jslSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_ONLY_SSL, "true");
-        jodSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_SSL_SHARING_ENABLED, "true");
+        jslSettingsMap.put(JSLSettings_002.JSLCOMM_LOCAL_SSL_SHARING_ENABLED, "true");
         // let auto-generate full certificate for JSL
         jslSettings = new JSLSettings_002(jslSettingsMap);
 
@@ -435,7 +433,7 @@ public class CommSecurityLevelsTest {
     public void testLocal_SSLInstance(
             @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
             @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
-    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException, AbsCustomTrustManager.UpdateException, JavaJKS.LoadingException {
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, Discover.DiscoveryException, StateException, AbsCustomTrustManager.UpdateException, JavaJKS.LoadingException {
 
 
         when(objInfo.getObjName()).thenReturn("TestObject");
@@ -443,7 +441,7 @@ public class CommSecurityLevelsTest {
         when(srvInfo.getSrvId()).thenReturn("srvId");
         when(srvInfo.getSrvName()).thenReturn("TestService");
         when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
-        when(jslObjsMngr.addNewConnection(any(), any())).thenReturn(jslRemoteObject);
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
         when(jslRemoteObject.getName()).thenReturn("TestObject");
         when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
         when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection

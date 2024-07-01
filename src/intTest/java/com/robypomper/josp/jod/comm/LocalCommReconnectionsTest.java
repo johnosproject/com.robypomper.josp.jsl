@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Operating System Project is the collection of software and configurations
  * to generate IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,12 +60,13 @@ import static org.mockito.Mockito.when;
  * perform his tests.
  */
 @ExtendWith(MockitoExtension.class)
-public class LocalCommTest {
+public class LocalCommReconnectionsTest {
 
 
     // Class constants
 
     protected static final String UNIQUE_ID = "123456789";
+    protected static final long WAIT_PER_INTF = 100L;
 
 
     // Internal vars
@@ -147,7 +148,7 @@ public class LocalCommTest {
         jslComm.getLocalConnections().start();
 
         System.out.println("\nWAIT FOR CONNECTIONS");
-        JavaThreads.softSleep(getNetworkInterfacesCount() * 100L);
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
 
         System.out.println("\nCHECK FOR CONNECTIONS (JOD Side)");
         assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
@@ -163,12 +164,62 @@ public class LocalCommTest {
         //...
         assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
 
+
+
+
+        System.out.println("\nJSL LOCAL COMM STOP 1st");
+        jslComm.getLocalConnections().stop();
+
+        System.out.println("WAIT FOR DISCONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(0, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJODLocConnConnectedCount(jodComm));
+        //jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        //assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(0, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJSLLocConnConnectedCount(jslComm));
+        //jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        ////...
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+        System.out.println("\nJSL LOCAL COMM START 2nd");
+        jslComm.getLocalConnections().start();
+
+        System.out.println("WAIT FOR CONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJODLocConnConnectedCount(jodComm));
+        jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(1, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJSLLocConnConnectedCount(jslComm));
+        jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        //...
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+
+
+
         System.out.println("\nJOD LOCAL COMM STOP");
         try {
             jodComm.stopLocal();
         } catch (Throwable ignore) {}
 
-        JavaThreads.softSleep(getNetworkInterfacesCount() * 100L);
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
 
         System.out.println("\nJSL LOCAL COMM STOP");
         jslComm.getLocalConnections().stop();
@@ -229,7 +280,7 @@ public class LocalCommTest {
         jodComm.startLocal();
 
         System.out.println("\nWAIT FOR CONNECTIONS");
-        JavaThreads.softSleep(getNetworkInterfacesCount() * 100L);
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
 
         System.out.println("\nCHECK FOR CONNECTIONS (JOD Side)");
         assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
@@ -245,10 +296,60 @@ public class LocalCommTest {
         //...
         assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
 
+
+
+
+        System.out.println("\nJOD LOCAL COMM STOP 1st");
+        jodComm.stopLocal();
+
+        System.out.println("WAIT FOR DISCONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(0, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJODLocConnConnectedCount(jodComm));
+        //jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        //assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(0, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJSLLocConnConnectedCount(jslComm));
+        //jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        ////...
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+        System.out.println("\nJOD LOCAL COMM START 2nd");
+        jodComm.startLocal();
+
+        System.out.println("WAIT FOR CONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJODLocConnConnectedCount(jodComm));
+        jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(1, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJSLLocConnConnectedCount(jslComm));
+        jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        //...
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+
+
+
         System.out.println("\nJSL LOCAL COMM STOP");
         jslComm.getLocalConnections().stop();
 
-        JavaThreads.softSleep(getNetworkInterfacesCount() * 100L);
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
 
         System.out.println("\nJOD LOCAL COMM STOP");
         try {
@@ -257,6 +358,164 @@ public class LocalCommTest {
 
         assertEquals(DisconnectionReason.REMOTE_REQUEST, jodRemoteClient.getClient().getDisconnectionReason());
         assertEquals(DisconnectionReason.LOCAL_REQUEST, jslClient.getDisconnectionReason());
+    }
+
+
+    @Test
+    public void testLocalReconnections(
+            @Mock JODObjectInfo_002 objInfo, @Mock JCPAPIsClientObj jcpClientObj, @Mock JODPermissions_002 jodPermissions, @Mock JODEvents_002 jodEvents,
+            @Mock JSLServiceInfo srvInfo, @Mock JCPAPIsClientSrv jcpClientSrv, @Mock JSLObjsMngr_002 jslObjsMngr, @Mock DefaultObjComm jslObjComm, @Mock JSLRemoteObject jslRemoteObject
+    ) throws JODCommunication.LocalCommunicationException, JSLCommunication.LocalCommunicationException, SocketException, Discover.DiscoveryException, StateException {
+
+
+        when(objInfo.getObjName()).thenReturn("TestObject");
+        when(objInfo.getObjId()).thenReturn("11111-22222-33333");
+        when(srvInfo.getSrvId()).thenReturn("srvId");
+        when(srvInfo.getSrvName()).thenReturn("TestService");
+        when(srvInfo.getFullId()).thenReturn("srvId/usrId/instId");
+        when(jslObjsMngr.createNewRemoteObject(any(), any())).thenReturn(jslRemoteObject);
+        when(jslRemoteObject.getName()).thenReturn("TestObject");
+        when(jslRemoteObject.getComm()).thenReturn(jslObjComm);     // Used during jsl disconnection
+        when(jslObjComm.isLocalConnected()).thenReturn(false);   // Used during jsl disconnection
+
+
+        System.out.println("\nSETUP TEST");
+        Map<String, Object> jodSettingsMap = getDefaultJODSettings(port);
+        jodSettings = new JODSettings_002(jodSettingsMap);
+        Map<String, Object> jslSettingsMap = getDefaultJSLSettings();
+        jslSettings = new JSLSettings_002(jslSettingsMap);
+
+        System.out.println("\nJOD LOCAL COMM START");
+        jodComm = new JODCommunication_002(jodSettings, objInfo, jcpClientObj, jodPermissions, jodEvents, UNIQUE_ID);
+        jodComm.startLocal();
+
+        System.out.println("\nJSL LOCAL COMM START");
+        jslComm = new JSLCommunication_002(null, jslSettings, srvInfo, jcpClientSrv, jslObjsMngr, UNIQUE_ID + "srv");
+        jslComm.getLocalConnections().start();
+
+        System.out.println("\nWAIT FOR CONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("\nCHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJODLocConnConnectedCount(jodComm));
+        JODLocalClientInfo jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("\nCHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(1, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJSLLocConnConnectedCount(jslComm));
+        JSLLocalClient jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        //...
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+
+        System.out.println("\nJSL LOCAL COMM STOP 1st");
+        jslComm.getLocalConnections().stop();
+
+        System.out.println("WAIT FOR DISCONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(0, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJODLocConnConnectedCount(jodComm));
+        //jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        //assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(0, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJSLLocConnConnectedCount(jslComm));
+        //jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        ////...
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+        System.out.println("\nJSL LOCAL COMM START 2nd");
+        jslComm.getLocalConnections().start();
+
+        System.out.println("WAIT FOR CONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJODLocConnConnectedCount(jodComm));
+        jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(1, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJSLLocConnConnectedCount(jslComm));
+        jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        //...
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+
+        System.out.println("\nJOD LOCAL COMM STOP 1st");
+        jodComm.stopLocal();
+
+        System.out.println("WAIT FOR DISCONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(0, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJODLocConnConnectedCount(jodComm));
+        //jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        //assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(0, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(0, getJSLLocConnConnectedCount(jslComm));
+        //jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        ////...
+        //assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+        System.out.println("\nJOD LOCAL COMM START 2nd");
+        jodComm.startLocal();
+
+        System.out.println("WAIT FOR CONNECTIONS");
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("CHECK FOR CONNECTIONS (JOD Side)");
+        assertEquals(1, getJODLocConnCount(jodComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJODLocConnConnectedCount(jodComm));
+        jodRemoteClient = jodComm.getAllLocalClientsInfo().get(0);
+        assertEquals("srvId/usrId/instId", jodRemoteClient.getFullSrvId());
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jodRemoteClient.getClient().getDisconnectionReason());
+
+        System.out.println("CHECK FOR CONNECTIONS (JSL Side)");
+        assertEquals(1, getJSLLocConnCount(jslComm));           // increase it if JSLSettings::JSLCOMM_LOCAL_ONLY_LOCALHOST=false AND multiple interfaces on local machine
+        assertEquals(1, getJSLLocConnConnectedCount(jslComm));
+        jslClient = jslComm.getLocalConnections().getLocalClients().get(0);
+        //...
+        assertEquals(DisconnectionReason.NOT_DISCONNECTED, jslClient.getDisconnectionReason());
+
+
+
+
+
+        System.out.println("\nJOD LOCAL COMM STOP");
+        try {
+            jodComm.stopLocal();
+        } catch (Throwable ignore) {}
+
+        JavaThreads.softSleep(getNetworkInterfacesCount() * WAIT_PER_INTF);
+
+        System.out.println("\nJSL LOCAL COMM STOP");
+        jslComm.getLocalConnections().stop();
+
+        assertEquals(DisconnectionReason.LOCAL_REQUEST, jodRemoteClient.getClient().getDisconnectionReason());
+        assertEquals(DisconnectionReason.REMOTE_REQUEST, jslClient.getDisconnectionReason());
     }
 
 
