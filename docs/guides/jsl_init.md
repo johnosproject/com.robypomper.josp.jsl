@@ -1,15 +1,23 @@
-# JSL - Guides: Init JSL
+# JOSP Service Library -Guides: Init JSL
 
-[README](../../README.md) | [SPECS](../specs.md) | [GUIDES](../guides.md) | [CHANGELOG](../../CHANGELOG.md) | [TODOs](../../TODOs.md) | [LICENCE](../../LICENCE.md)
+First of all' you need to include the JSL library into your project. You can do
+this adding the JSL library as a Gradle dependency into your `build.gradle` file:
 
-A JSL Instance must be initialized using a `JSL.Settings` object. This object can
-be initialized parsing a file (like during the JSL Shell initialization) or
-starting from a property `Map`.
+```groovy
+dependencies {
+    // Add JSL as Gradle dependency
+    implementation "com.robypomper.josp:jospJSL:$VERSION"
+}
+```
+
+Then, a new JSL Instance must be initialized using a `JSL.Settings` object that
+contains instances configs. This object can be initialized parsing a file (like
+done during the JSL Shell initialization) or starting from a property `Map`.
 Once you loaded the JSL settings, then you can initialize the instance:
 
 ```shell
 JSL.Settings settings = FactoryJSL.loadSettings("jsl.yml", "");
-jsl = FactoryJSL.createJSL(settings, jslVer);
+jsl = FactoryJSL.createJSL(settings, "");
 ```
 
 For more `JSL` and `JSL.Settings` constructors check out the

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,17 +68,17 @@ public interface JSL {
     String version();
 
     /**
-     * @return the list of supported JOSP JOD (direct) versions.
+     * @return the array of supported JOSP JOD (direct) versions.
      */
     String[] versionsJOSPObject();
 
     /**
-     * @return the list of supported JOSP Protocol versions.
+     * @return the array of supported JOSP Protocol versions.
      */
     String[] versionsJOSPProtocol();
 
     /**
-     * @return the list of supported JCP APIs versions.
+     * @return the array of supported JCP APIs versions.
      */
     String[] versionsJCPAPIs();
 
@@ -131,6 +131,29 @@ public interface JSL {
     JSLObjsMngr getObjsMngr();
 
     JSLCommunication getCommunication();
+
+
+    // Listeners
+
+    /**
+     * Add given listener to current JSLState's events.
+     *
+     * @param listener the listener to add.
+     */
+    void addListener(JSLStateListener listener);
+
+    /**
+     * Remove given listener from current JSLState's events.
+     *
+     * @param listener the listener to remove.
+     */
+    void removeListener(JSLStateListener listener);
+
+    interface JSLStateListener {
+
+        void onJSLStateChanged(JSLState newState, JSLState oldState);
+
+    }
 
 
     // Settings class

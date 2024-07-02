@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.objs.structure.JSLComponent;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
-import com.robypomper.log.Mrk_JOD;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +38,7 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultHistoryCompStatus.class);
     private final JSLComponent comp;
     private Map<Integer, StatusHistoryListener> listeners = new HashMap<>();
     private int reqCount = 0;
@@ -64,13 +63,13 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
     }
 
     @Override
-    public List<JOSPStatusHistory> getStatusHistory(HistoryLimits limits, long timeout) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
-        final List<JOSPStatusHistory> result = new ArrayList<>();
+    public List<JOSPHistory> getStatusHistory(HistoryLimits limits, long timeout) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
+        final List<JOSPHistory> result = new ArrayList<>();
         final CountDownLatch countdown = new CountDownLatch(1);
         // register internal listener
         int reqId = registerListener(new StatusHistoryListener() {
             @Override
-            public void receivedStatusHistory(List<JOSPStatusHistory> history) {
+            public void receivedStatusHistory(List<JOSPHistory> history) {
                 result.addAll(history);
                 countdown.countDown();
             }
@@ -103,10 +102,10 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     private void send(int reqId, HistoryLimits limits) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
         try {
-            sendToObjectCloudly(JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryCompStatusMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
+            sendToObjectCloudly(JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryReqMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
 
         } catch (JSLRemoteObject.MissingPermission | PeerNotConnectedException | PeerStreamException ignore) {
-            sendToObjectLocally(JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryCompStatusMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
+            sendToObjectLocally(JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_MIN_PERM, JOSPProtocol_ServiceToObject.createHistoryReqMsg(getServiceInfo().getFullId(), getRemote().getId(), getComponent().getPath().getString(), Integer.toString(reqId), limits));
         }
     }
 
@@ -115,27 +114,25 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     public boolean processHistoryCompStatusMsg(String msg) {
         // Received StatusHistory message
-        System.out.println(String.format("Received StatusHistory Message for %s component on %s object", getComponent().getName(), getRemote().getName()));
-
         String objId;
         String fullSrvId;
         String compPathStr;
         String reqId;
-        List<JOSPStatusHistory> statusesHistory;
+        List<JOSPHistory> statusesHistory;
         try {
-            objId = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_ObjId(msg);
-            compPathStr = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_CompPath(msg);
-            reqId = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_ReqId(msg);
-            statusesHistory = JOSPProtocol_ObjectToService.getHistoryCompStatusMsg_HistoryStatus(msg);
+            objId = JOSPProtocol_ObjectToService.getHistoryResMsg_ObjId(msg);
+            compPathStr = JOSPProtocol_ObjectToService.getHistoryResMsg_CompPath(msg);
+            reqId = JOSPProtocol_ObjectToService.getHistoryResMsg_ReqId(msg);
+            statusesHistory = JOSPProtocol_ObjectToService.getHistoryResMsg_HistoryMessage(msg);
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, e.getMessage()), e);
+            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_NAME, e.getMessage()), e);
             return false;
         }
 
         StatusHistoryListener l = listeners.get(Integer.parseInt(reqId));
         if (l == null) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
+            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_MSG_REQ_NAME, reqId));
             return false;
         }
 

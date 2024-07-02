@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ The John Operating System Project is the collection of software and configurations
+  ~ to generate IoT EcoSystem, like the John Operating System Platform one.
+  ~ Copyright (C) 2024 Roberto Pompermaier
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Configuration status="warn">
+    <Properties>
+        <Property name="filename_base">jospJOD</Property>
+    </Properties>
+
+    <Appenders>
+
+        <Console name="trace-JSL" target="SYSTEM_OUT">
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout alwaysWriteExceptions="false"
+                           pattern="%d{DEFAULT} # %highlight{[ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]} JSL SERVICE %msg%n%notEmpty{%ex{full}}"/>
+        </Console>
+
+        <Console name="trace-JOD" target="SYSTEM_OUT">
+            <Filters>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout alwaysWriteExceptions="false"
+                           pattern="%d{DEFAULT} # %highlight{[ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]} JOD OBJECT  %msg%n%notEmpty{%ex{full}}"/>
+        </Console>
+
+        <Console name="libs-no-testing" target="SYSTEM_OUT">
+            <Filters>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout alwaysWriteExceptions="false"
+                           pattern="           %d{ABSOLUTE} # [ %-5level  | %-15.-15threadName | %-30.30logger{1.} ]             %msg%n%notEmpty{%ex{full}}"/>
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+
+        <Root additivity="false" level="ALL">
+            <AppenderRef ref="libs-no-testing"/>
+        </Root>
+
+        <Logger name="com.robypomper.josp.jsl" additivity="false">
+            <AppenderRef ref="trace-JSL"/>
+        </Logger>
+
+        <Logger name="com.robypomper.josp.jod" additivity="false">
+            <AppenderRef ref="trace-JOD"/>
+        </Logger>
+
+    </Loggers>
+
+</Configuration>

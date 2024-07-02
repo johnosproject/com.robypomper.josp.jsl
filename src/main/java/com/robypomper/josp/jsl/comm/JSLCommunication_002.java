@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,8 @@ import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.protocol.JOSPProtocol;
 import com.robypomper.josp.protocol.JOSPProtocol_ObjectToService;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -45,7 +44,7 @@ public class JSLCommunication_002 implements JSLCommunication {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLCommunication_002.class);
     // JSL
     private final JSLSettings_002 locSettings;
     private final JSLObjsMngr_002 jslObjsMngr;
@@ -70,11 +69,11 @@ public class JSLCommunication_002 implements JSLCommunication {
         this.jcpClient = jcpClient;
         this.jcpClient.addConnectionListener(jcpConnectionListener);
 
-        this.localClients = new JSLLocalClientsMngr(jsl, this, jslObjsMngr, locSettings, srvInfo);
+        this.localClients = new JSLLocalClientsMngr(this, jslObjsMngr, locSettings, srvInfo);
         this.gwClient = new JSLGwS2OClient(this, srvInfo, jcpClient, instanceId);
         this.gwClient.addListener(gwClientListener);
 
-        log.info(Mrk_JSL.JSL_COMM, String.format("Initialized JODCommunication instance for '%s' ('%s') service", srvInfo.getSrvName(), srvInfo.getSrvId()));
+        log.info(String.format("Initialized JSLCommunication instance for '%s' ('%s') service", srvInfo.getSrvName(), srvInfo.getSrvId()));
     }
 
 
@@ -93,10 +92,10 @@ public class JSLCommunication_002 implements JSLCommunication {
         String objId;
         try {
             objId = JOSPProtocol_ObjectToService.getObjId(msg);
-            log.info(Mrk_JSL.JSL_COMM, String.format("Received '%s' message from %s (%s)", msg.substring(0, msg.indexOf('\n')), objId, connType == JOSPPerm.Connection.OnlyLocal ? "local connection" : "cloud connection"));
+            log.trace(String.format("Received '%s' message from %s (%s)", msg.substring(0, msg.indexOf('\n')), objId, connType == JOSPPerm.Connection.OnlyLocal ? "local connection" : "cloud connection"));
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on parsing '%s' message because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
+            log.warn(String.format("Error on parsing '%s' message because %s", msg.substring(0, msg.indexOf('\n')), e.getMessage()), e);
             return false;
         }
 
@@ -120,11 +119,11 @@ public class JSLCommunication_002 implements JSLCommunication {
             if (!obj.processFromObjectMsg(msg, connType))
                 throw new Throwable(String.format("Unknown error on processing '%s' message", msg.substring(0, msg.indexOf('\n'))));
 
-            log.info(Mrk_JSL.JSL_COMM, String.format("Message '%s' processed successfully", msg.substring(0, msg.indexOf('\n'))));
+            log.trace(String.format("Message '%s' received from '%s' processed successfully", msg.substring(0, msg.indexOf('\n')), objId));
             return true;
 
         } catch (Throwable t) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on processing '%s' message from %s because %s", msg.substring(0, msg.indexOf('\n')), objId, t.getMessage()), t);
+            log.warn(String.format("Error on processing '%s' message from %s because %s", msg.substring(0, msg.indexOf('\n')), objId, t.getMessage()), t);
             return false;
         }
     }
@@ -166,28 +165,31 @@ public class JSLCommunication_002 implements JSLCommunication {
 
         @Override
         public void onConnected(JCPClient2 jcpClient) {
-            log.info(Mrk_JSL.JSL_COMM, "JCP APIs client connected");
+            log.info("JCP APIs client connected");
             connFailedPrinted = false;
         }
 
         @Override
         public void onConnectionFailed(JCPClient2 jcpClient, Throwable t) {
-            if (connFailedPrinted) {
-                log.debug("Error on JCP APIs connection attempt");
-            } else {
-                log.warn("Error on JCP APIs connection attempt", t);
-                connFailedPrinted = true;
-            }
+            if (t instanceof JCPClient2.JCPNotReachableException) {
+                if (connFailedPrinted) {
+                    log.debug(String.format("JCP APIs at '%s' still unreachable", jcpClient.getAPIsUrl()));
+                } else {
+                    log.warn(String.format("Can't connect to JCP APIs at '%s', retry later", jcpClient.getAPIsUrl()));
+                    connFailedPrinted = true;
+                }
+            } else
+                log.warn(String.format("Error on JCP APIs connection attempt at '%s'", jcpClient.getAPIsUrl()), t);
         }
 
         @Override
         public void onAuthenticationFailed(JCPClient2 jcpClient, Throwable t) {
-            log.warn(Mrk_JSL.JSL_COMM, String.format("Error on authenticating to JCP APIs because %s", t.getMessage()), t);
+            log.warn(String.format("Error on authenticating to JCP APIs because %s", t.getMessage()), t);
         }
 
         @Override
         public void onDisconnected(JCPClient2 jcpClient) {
-            log.info(Mrk_JSL.JSL_COMM, "JCP APIs Client disconnected");
+            log.info("JCP APIs Client disconnected");
         }
 
     };
@@ -205,7 +207,7 @@ public class JSLCommunication_002 implements JSLCommunication {
 
         @Override
         public void onConnect(Peer peer) {
-            log.info(Mrk_JSL.JSL_COMM, "JCP GWs client connected");
+            log.info("JCP GWs client connected");
         }
 
         @Override
@@ -214,7 +216,7 @@ public class JSLCommunication_002 implements JSLCommunication {
 
         @Override
         public void onDisconnect(Peer peer) {
-            log.info(Mrk_JSL.JSL_COMM, "JCP GWs Client disconnected");
+            log.info("JCP GWs Client disconnected");
         }
 
         @Override

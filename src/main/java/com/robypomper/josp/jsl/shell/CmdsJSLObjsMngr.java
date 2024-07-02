@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import com.robypomper.josp.jsl.objs.structure.pillars.JSLRangeState;
 import com.robypomper.josp.protocol.HistoryLimits;
 import com.robypomper.josp.protocol.JOSPEvent;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.josp.protocol.JOSPStatusHistory;
+import com.robypomper.josp.protocol.JOSPHistory;
 
 import java.util.List;
 
@@ -137,9 +137,8 @@ public class CmdsJSLObjsMngr {
 
         JSLGwS2OClient cloudClient = ((DefaultObjComm) obj.getComm()).getCloudConnection();
         s.append(String.format("- Cloud %-12s %s\n", getCloudObjState(cloudClient, obj), cloudClient));
-        for (JSLLocalClient client : ((DefaultObjComm) obj.getComm()).getLocalClients()) {
-            s.append(String.format("- Local %-12s %s\n", client.getState(), client));
-        }
+        JSLLocalClient client = ((DefaultObjComm) obj.getComm()).getActiveLocalClient();
+        s.append(String.format("- Local %-12s %s\n", client.getState(), client));
 
         return s.toString();
     }
@@ -212,7 +211,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No object found with id '%s'", objId);
 
         // Get statuses history
-        List<JOSPEvent> eventsHistory = null;
+        List<JOSPEvent> eventsHistory;
         try {
             eventsHistory = obj.getInfo().getEventsHistory(limits, 10);
         } catch (JSLRemoteObject.ObjectNotConnected objectNotConnected) {
@@ -336,7 +335,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No component found with path '%s' in '%s' object", compPath, objId);
 
         // Get statuses history
-        List<JOSPStatusHistory> statusHistory = null;
+        List<JOSPHistory> statusHistory;
         try {
             statusHistory = obj.getStruct().getComponentHistory(comp, limits, 30);
         } catch (JSLRemoteObject.ObjectNotConnected objectNotConnected) {
@@ -349,7 +348,7 @@ public class CmdsJSLObjsMngr {
             return String.format("No history for Component '%s' of '%s' Object", compPath, objId);
 
         return String.format("Status History for Component '%s' of '%s' Object\n", compPath, objId) +
-                JOSPStatusHistory.logStatuses(statusHistory, false);
+                JOSPHistory.logStatuses(statusHistory, false);
     }
 
 
@@ -812,7 +811,7 @@ public class CmdsJSLObjsMngr {
     }
 
     private String getLocalObjState(JSLRemoteObject obj) {
-        int allClients = ((DefaultObjComm) obj.getComm()).getLocalClients().size();
+        int allClients = ((DefaultObjComm) obj.getComm()).getLocalBackupClients().size();
         return obj.getComm().isLocalConnected() ? String.format("CONNECTED (%d)", allClients) : "DISCONNECTED";
     }
 

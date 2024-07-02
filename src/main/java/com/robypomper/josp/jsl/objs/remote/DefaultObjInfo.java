@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import com.robypomper.josp.jsl.objs.history.DefaultHistoryObjEvents;
 import com.robypomper.josp.jsl.objs.history.HistoryObjEvents;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class DefaultObjInfo extends ObjBase implements ObjInfo {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjInfo.class);
     private String name = null;
     private String ownerId = null;
     private String jodVersion = null;
@@ -128,7 +128,7 @@ public class DefaultObjInfo extends ObjBase implements ObjInfo {
 
     // Processing
 
-    public boolean processObjectInfoMsg(String msg, JOSPPerm.Connection connType) throws Throwable {
+    public boolean processObjectInfoMsg(String msg, JOSPPerm.Connection connType) {
         try {
             String newName = JOSPProtocol_ObjectToService.getObjectInfoMsg_Name(msg);
             if (name == null || !name.equals(newName)) {
@@ -173,7 +173,9 @@ public class DefaultObjInfo extends ObjBase implements ObjInfo {
             }
 
         } catch (JOSPProtocol.ParsingException e) {
-            throw new Throwable(String.format("Error on processing ObjectInfo message for '%s' object because %s", getRemote().getId(), e.getMessage()), e);
+            log.warn(String.format("%s Error on processing ObjectInfo message '%s...' for '%s' object because %s",
+                    getLogRO(), msg.substring(0, Math.min(10, msg.length())), getRemote().getId(), e.getMessage()), e);
+            return false;
         }
 
         return true;

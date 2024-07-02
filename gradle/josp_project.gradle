@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Operating System Project is the collection of software and configurations
  * to generate IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,12 @@ ext {
     // Customize version required for JOSP Components internal dependencies
     // (de-comment for first jospModes=DEV's build)
     //ext.set('OVERRIDE_jospDependenciesVersion',ext.get('jospVersions.CURRENT'))    // Default: jospBuildVersion
-    //ext.set('OVERRIDE_jospDependenciesVersion','2.2.3-DEV')                        // Default: jospBuildVersion
+    //ext.set('OVERRIDE_jospDependenciesVersion','2.2.4-DEV')                        // Default: jospBuildVersion
+
+    // Override version required for JOSP Components internal dependencies with
+    // current build version. It's more important than 'OVERRIDE_jospDependenciesVersion'
+    // (de-comment for first jospModes=DEV's build)
+    ext.set('jospDependenciesVersion_SameVersion',true)    // Default: false
 
     // PROJECT BUILD CONFIGURATIONS - END
 

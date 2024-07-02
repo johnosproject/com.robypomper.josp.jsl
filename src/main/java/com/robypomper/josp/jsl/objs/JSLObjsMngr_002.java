@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import com.robypomper.josp.jsl.objs.structure.AbsJSLState;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.jsl.user.JSLUserMngr;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +42,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLObjsMngr_002.class);
     private final JSLSettings_002 locSettings;
     private final JSLServiceInfo srvInfo;
     private final List<JSLRemoteObject> objs = new ArrayList<>();
@@ -64,7 +63,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
         this.srvInfo = srvInfo;
         usrMngr.addUserListener(userListener);
 
-        log.info(Mrk_JSL.JSL_OBJS, "Initialized JSLObjsMngr");
+        log.info("Initialized JSLObjsMngr");
 
         AbsJSLState.loadAllStateClasses();
     }
@@ -109,12 +108,13 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      * {@inheritDoc}
      */
     @Override
-    public JSLRemoteObject getByConnection(JSLLocalClient client) {
+    public List<JSLRemoteObject> getByModel(String model) {
+        List<JSLRemoteObject> filteredObjs = new ArrayList<>();
         for (JSLRemoteObject obj : objs)
-            if (((DefaultObjComm) obj.getComm()).getLocalClients().contains(client))
-                return obj;
+            if (obj.getInfo().getModel().compareToIgnoreCase(model)==0)
+                filteredObjs.add(obj);
 
-        return null;
+        return filteredObjs;
     }
 
     /**
@@ -122,7 +122,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      */
     @Override
     public List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern) {
-        log.warn(Mrk_JSL.JSL_OBJS, "Method searchObjects(...) not implemented, return empty objects list");
+        log.warn("Method searchObjects(...) not implemented, return empty objects list");
         return new ArrayList<>();
     }
 
@@ -146,24 +146,42 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
      * {@inheritDoc}
      */
     @Override
-    public JSLRemoteObject addNewConnection(JSLLocalClient serverConnection) {
-        assert serverConnection.getState().isConnected() : "Method addLocalClient() can be call only if localClient is connected.";
+    public JSLRemoteObject createNewRemoteObject(JSLLocalClient objectConnection, String remoteObjId) {
+        log.debug(String.format("Register new object '%s' with connection (%s:%d) from '%s' service", remoteObjId, objectConnection.getSocket().getInetAddress(), objectConnection.getSocket().getPort(), srvInfo.getSrvId()));
+        JSLRemoteObject remObj;
+        synchronized (objs) {
+            remObj = getById(remoteObjId);
+            assert remObj == null : "Method createNewRemoteObject() can be called only if object is not already registered.";
+            remObj = new DefaultJSLRemoteObject(srvInfo, remoteObjId, communication);
+            objs.add(remObj);
+        }
 
-        String locConnObjId = serverConnection.getRemoteId();
+        remObj.getPerms().addListener(objectPermsListener);
+        emit_ObjAdded(remObj);
 
+        return remObj;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    //@Override
+    @Deprecated
+    public JSLRemoteObject addNewConnection(JSLLocalClient serverConnection, String locConnObjId) {
+        assert serverConnection.getState().isConnected() : "Method addLocalClient() can be called only if localClient is connected.";
+
+        log.debug(String.format("Register object '%s' new connection (%s:%d) from '%s' service", locConnObjId, serverConnection.getSocket().getInetAddress(), serverConnection.getSocket().getPort(), srvInfo.getSrvId()));
         JSLRemoteObject remObj;
         synchronized (objs) {
             remObj = getById(locConnObjId);
             if (remObj == null) {
-                log.info(Mrk_JSL.JSL_OBJS, String.format("Register new local object '%s' and add connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
-                remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, serverConnection, communication);
+                remObj = new DefaultJSLRemoteObject(srvInfo, locConnObjId, communication);
                 objs.add(remObj);
                 remObj.getPerms().addListener(objectPermsListener);
                 emit_ObjAdded(remObj);
 
             } else {
-                log.info(Mrk_JSL.JSL_OBJS, String.format("Add object '%s' connection (%s) to '%s' service", locConnObjId, serverConnection, srvInfo.getSrvId()));
-                ((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
+                //((DefaultObjComm) remObj.getComm()).addLocalClient(serverConnection);
             }
         }
 
@@ -173,10 +191,23 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean removeConnection(JSLLocalClient client) {
-        log.warn(Mrk_JSL.JSL_OBJS, "Method removeConnection(...) not implemented, return false");
-        return false;
+    //@Override
+    @Deprecated
+    public boolean removeConnection(JSLLocalClient serverConnection) {
+        assert serverConnection.getRemoteObject() != null : "Method removeConnection() can be called only if localClient was connected successfully.";
+        assert !serverConnection.getState().isConnected() : "Method removeConnection() can be called only if localClient is NOT connected.";
+
+        String locConnObjId = serverConnection.getRemoteObject().getId();
+        log.debug(String.format("Deregister object '%s' closed connection (%s:%d) from '%s' service", locConnObjId, serverConnection.getSocket().getInetAddress(), serverConnection.getSocket().getPort(), srvInfo.getSrvId()));
+        JSLRemoteObject remObj;
+        synchronized (objs) {
+            remObj = getById(locConnObjId);
+            if (remObj == null)
+                return false;
+            //((DefaultObjComm) remObj.getComm()).removeLocalClient(serverConnection);
+        }
+
+        return true;
     }
 
     /**
@@ -193,7 +224,7 @@ public class JSLObjsMngr_002 implements JSLObjsMngr {
     @Override
     public void addCloudObject(String objId) {
         assert getById(objId) == null;
-        log.info(Mrk_JSL.JSL_OBJS, String.format("Register new cloud object '%s' to '%s' service", objId, srvInfo.getSrvId()));
+        log.info(String.format("Register new cloud object '%s' to '%s' service", objId, srvInfo.getSrvId()));
         JSLRemoteObject remObj = new DefaultJSLRemoteObject(srvInfo, objId, communication);
         objs.add(remObj);
         remObj.getPerms().addListener(objectPermsListener);

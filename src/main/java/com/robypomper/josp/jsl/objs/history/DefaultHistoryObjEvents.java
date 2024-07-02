@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import com.robypomper.comm.exception.PeerStreamException;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.*;
-import com.robypomper.log.Mrk_JOD;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultHistoryObjEvents.class);
     private final JSLRemoteObject obj;
     private final Map<Integer, EventsListener> listeners = new HashMap<>();
     private int reqCount = 0;
@@ -101,10 +100,10 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
 
     private void send(int reqId, HistoryLimits limits) throws JSLRemoteObject.ObjectNotConnected, JSLRemoteObject.MissingPermission {
         try {
-            sendToObjectCloudly(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createHistoryEventsMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
+            sendToObjectCloudly(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createEventsReqMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
 
         } catch (JSLRemoteObject.MissingPermission | PeerNotConnectedException | PeerStreamException ignore) {
-            sendToObjectLocally(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createHistoryEventsMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
+            sendToObjectLocally(JOSPPerm.Type.CoOwner, JOSPProtocol_ServiceToObject.createEventsReqMsg(getServiceInfo().getFullId(), getRemote().getId(), Integer.toString(reqId), limits));
         }
     }
 
@@ -115,17 +114,17 @@ public class DefaultHistoryObjEvents extends HistoryBase implements HistoryObjEv
         String reqId;
         List<JOSPEvent> eventsHistory;
         try {
-            reqId = JOSPProtocol_ObjectToService.getHistoryEventsMsg_ReqId(msg);
-            eventsHistory = JOSPProtocol_ObjectToService.getHistoryEventsMsg_HistoryStatus(msg);
+            reqId = JOSPProtocol_ObjectToService.getEventsResMsg_ReqId(msg);
+            eventsHistory = JOSPProtocol_ObjectToService.getEventsResMsg_HistoryMessage(msg);
 
         } catch (JOSPProtocol.ParsingException e) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.HISTORY_EVENTS_REQ_NAME, e.getMessage()), e);
+            log.warn(String.format("Error on processing message %s because %s", JOSPProtocol_ServiceToObject.EVENTS_MSG_REQ_NAME, e.getMessage()), e);
             return false;
         }
 
         EventsListener l = listeners.get(Integer.parseInt(reqId));
         if (l == null) {
-            log.warn(Mrk_JOD.JOD_COMM, String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.HISTORY_STATUS_REQ_NAME, reqId));
+            log.warn(String.format("Error on processing message %s because no listener expecting '%s' request", JOSPProtocol_ServiceToObject.EVENTS_MSG_REQ_NAME, reqId));
             return false;
         }
 

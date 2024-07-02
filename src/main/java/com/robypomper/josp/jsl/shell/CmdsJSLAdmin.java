@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -481,15 +481,14 @@ public class CmdsJSLAdmin {
         }
 
         String s = "";
-        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.versionBuild);
-        s += String.format("  Sources  . . . . ::%s:%s\n", buildInfo.project, buildInfo.sourceSet);
+        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.buildVersion);
         s += String.format("  Git  . . . . . . %s (branch %s)\n", buildInfo.gitCommitShort, buildInfo.gitBranch);
         s += "  Build Process:";
         s += String.format("    Time . . . . . %s\n", JavaDate.DEF_DATE_FORMATTER.format(buildInfo.buildTime));
-        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.javaVersion, buildInfo.javaHome);
-        s += String.format("    Gradle . . . . v. %s\n", buildInfo.gradleVersion);
-        s += String.format("    User . . . . . %s\n", buildInfo.user);
-        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.osName, buildInfo.osVersion, buildInfo.osArch);
+        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.buildJavaVersion, buildInfo.buildJavaHome);
+        s += String.format("    Gradle . . . . v. %s\n", buildInfo.buildGradleVersion);
+        s += String.format("    User . . . . . %s\n", buildInfo.buildUser);
+        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.buildOsName, buildInfo.buildOsVersion, buildInfo.buildOsArch);
         return s;
     }
 
@@ -922,15 +921,14 @@ public class CmdsJSLAdmin {
         }
 
         String s = "";
-        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.versionBuild);
-        s += String.format("  Sources  . . . . ::%s:%s\n", buildInfo.project, buildInfo.sourceSet);
+        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.buildVersion);
         s += String.format("  Git  . . . . . . %s (branch %s)\n", buildInfo.gitCommitShort, buildInfo.gitBranch);
         s += "  Build Process:";
         s += String.format("    Time . . . . . %s\n", JavaDate.DEF_DATE_FORMATTER.format(buildInfo.buildTime));
-        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.javaVersion, buildInfo.javaHome);
-        s += String.format("    Gradle . . . . v. %s\n", buildInfo.gradleVersion);
-        s += String.format("    User . . . . . %s\n", buildInfo.user);
-        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.osName, buildInfo.osVersion, buildInfo.osArch);
+        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.buildJavaVersion, buildInfo.buildJavaHome);
+        s += String.format("    Gradle . . . . v. %s\n", buildInfo.buildGradleVersion);
+        s += String.format("    User . . . . . %s\n", buildInfo.buildUser);
+        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.buildOsName, buildInfo.buildOsVersion, buildInfo.buildOsArch);
         return s;
     }
 
@@ -1128,15 +1126,14 @@ public class CmdsJSLAdmin {
         }
 
         String s = "";
-        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.versionBuild);
-        s += String.format("  Sources  . . . . ::%s:%s\n", buildInfo.project, buildInfo.sourceSet);
+        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.buildVersion);
         s += String.format("  Git  . . . . . . %s (branch %s)\n", buildInfo.gitCommitShort, buildInfo.gitBranch);
         s += "  Build Process:";
         s += String.format("    Time . . . . . %s\n", JavaDate.DEF_DATE_FORMATTER.format(buildInfo.buildTime));
-        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.javaVersion, buildInfo.javaHome);
-        s += String.format("    Gradle . . . . v. %s\n", buildInfo.gradleVersion);
-        s += String.format("    User . . . . . %s\n", buildInfo.user);
-        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.osName, buildInfo.osVersion, buildInfo.osArch);
+        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.buildJavaVersion, buildInfo.buildJavaHome);
+        s += String.format("    Gradle . . . . v. %s\n", buildInfo.buildGradleVersion);
+        s += String.format("    User . . . . . %s\n", buildInfo.buildUser);
+        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.buildOsName, buildInfo.buildOsVersion, buildInfo.buildOsArch);
         return s;
     }
 
@@ -1289,15 +1286,14 @@ public class CmdsJSLAdmin {
         }
 
         String s = "";
-        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.versionBuild);
-        s += String.format("  Sources  . . . . ::%s:%s\n", buildInfo.project, buildInfo.sourceSet);
+        s += String.format("  Version  . . . . %s (build %s)\n", buildInfo.version, buildInfo.buildVersion);
         s += String.format("  Git  . . . . . . %s (branch %s)\n", buildInfo.gitCommitShort, buildInfo.gitBranch);
         s += "  Build Process:";
         s += String.format("    Time . . . . . %s\n", JavaDate.DEF_DATE_FORMATTER.format(buildInfo.buildTime));
-        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.javaVersion, buildInfo.javaHome);
-        s += String.format("    Gradle . . . . v. %s\n", buildInfo.gradleVersion);
-        s += String.format("    User . . . . . %s\n", buildInfo.user);
-        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.osName, buildInfo.osVersion, buildInfo.osArch);
+        s += String.format("    Java . . . . . v. %s (path %s)\n", buildInfo.buildJavaVersion, buildInfo.buildJavaHome);
+        s += String.format("    Gradle . . . . v. %s\n", buildInfo.buildGradleVersion);
+        s += String.format("    User . . . . . %s\n", buildInfo.buildUser);
+        s += String.format("    OS . . . . . . %s (v. %s arch %s)\n", buildInfo.buildOsName, buildInfo.buildOsVersion, buildInfo.buildOsArch);
         return s;
     }
 

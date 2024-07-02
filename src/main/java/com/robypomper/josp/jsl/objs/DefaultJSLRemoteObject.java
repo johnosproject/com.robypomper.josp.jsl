@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import com.robypomper.josp.jsl.objs.structure.JSLActionParams;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
 import com.robypomper.josp.protocol.JOSPProtocol_ObjectToService;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -38,7 +37,7 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultJSLRemoteObject.class);
 
     private final DefaultObjInfo objInfo;
     private final DefaultObjStruct objStruct;
@@ -60,7 +59,12 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
      * @param communication instance of the {@link JSLCommunication}.
      */
     public DefaultJSLRemoteObject(JSLServiceInfo srvInfo, String objId, JSLCommunication communication) {
-        this(srvInfo,objId,null,communication);
+        objInfo = new DefaultObjInfo(this, srvInfo);
+        objStruct = new DefaultObjStruct(this, srvInfo);
+        objPerms = new DefaultObjPerms(this, srvInfo);
+        objComm = new DefaultObjComm(this, srvInfo, communication);
+
+        this.objId = objId;
     }
 
     /**
@@ -73,6 +77,7 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
      * @param localClient   the client connected with JOD object.
      * @param communication instance of the {@link JSLCommunication}.
      */
+    @Deprecated
     public DefaultJSLRemoteObject(JSLServiceInfo srvInfo, String objId, JSLLocalClient localClient, JSLCommunication communication) {
         objInfo = new DefaultObjInfo(this, srvInfo);
         objStruct = new DefaultObjStruct(this, srvInfo);
@@ -81,11 +86,13 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
 
         this.objId = objId;
 
+        /*
         if (localClient!=null) {
             objComm.addLocalClient(localClient);
-            log.info(Mrk_JSL.JSL_OBJS_SUB, String.format("Initialized JSLRemoteObject '%s' on '%s' service (via direct connection: '%s')", objId, srvInfo.getSrvId(), localClient.getConnectionInfo()));
+            log.info(String.format("Initialized JSLRemoteObject '%s' (%s) on '%s' service (via direct connection: '%s')", objInfo.getName(), objId, srvInfo.getSrvId(), localClient.getConnectionInfo()));
         } else
-            log.info(Mrk_JSL.JSL_OBJS_SUB, String.format("Initialized JSLRemoteObject '%s' on '%s' service (via cloud connection)", objId, srvInfo.getSrvId()));
+            log.info(String.format("Initialized JSLRemoteObject '%s' (%s)  on '%s' service (via cloud connection)", objInfo.getName(), objId, srvInfo.getSrvId()));
+        */
     }
 
 
@@ -153,9 +160,9 @@ public class DefaultJSLRemoteObject implements JSLRemoteObject {
             return ((DefaultObjStruct) getStruct()).processObjectStructMsg(msg);
         else if (JOSPProtocol_ObjectToService.isObjectStateUpdMsg(msg))
             return ((DefaultObjStruct) getStruct()).processObjectUpdMsg(msg);
-        else if (JOSPProtocol_ObjectToService.isHistoryCompStatusMsg(msg))
+        else if (JOSPProtocol_ObjectToService.isHistoryResMsg(msg))
             return ((DefaultObjStruct) getStruct()).processHistoryCompStatusMsg(msg);
-        else if (JOSPProtocol_ObjectToService.isHistoryEventsMsg(msg))
+        else if (JOSPProtocol_ObjectToService.isEventsResMsg(msg))
             return ((DefaultObjInfo) getInfo()).processHistoryEventsMsg(msg);
 
         else if (JOSPProtocol_ObjectToService.isObjectPermsMsg(msg))

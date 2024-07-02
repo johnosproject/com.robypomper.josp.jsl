@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Operating System Project is the collection of software and configurations
  * to generate IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,14 +40,31 @@
 // SourceSes configs
 // -----------------
 
-sourceSets {}
+sourceSets {
+    intTest {}
+}
+
+configurations {
+    intTestImplementation.extendsFrom implementation
+    intTestRuntimeOnly.extendsFrom runtimeOnly
+}
 
 dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter:${project.ext.get("version.junit-jupiter")}"
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
     testImplementation sourceSets.main.output
     testImplementation sourceSets.main.runtimeClasspath
+    testImplementation "org.junit.jupiter:junit-jupiter:${project.ext.get("version.junit-jupiter")}"
+    testImplementation "org.mockito:mockito-core:5.11.0"
+    testImplementation "org.mockito:mockito-junit-jupiter:5.11.0"
+    testImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    intTestImplementation sourceSets.main.output
+    intTestImplementation sourceSets.main.runtimeClasspath
+    intTestImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    intTestImplementation "org.mockito:mockito-core:5.11.0"
+    intTestImplementation "org.mockito:mockito-junit-jupiter:5.11.0"
+    intTestImplementation "com.robypomper.josp:jospJOD:${project.ext.get("version.deps.jospJOD")}"
+    intTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 
@@ -58,3 +75,23 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed"
+    }
+
+    enableAssertions = false
+}
+
+check.dependsOn integrationTest

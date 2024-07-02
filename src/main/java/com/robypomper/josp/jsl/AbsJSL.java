@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,11 @@ import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.jsl.user.JSLUserMngr;
 import com.robypomper.josp.states.JSLState;
 import com.robypomper.josp.states.StateException;
-import com.robypomper.log.Mrk_JOD;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,11 +76,12 @@ public abstract class AbsJSL implements JSL {
     private final JSLAdmin admin;
     private final JSLObjsMngr objs;
     private final JSLCommunication comm;
+    private final List<JSLStateListener> stateListeners = new ArrayList<>();
 
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(AbsJSL.class);
     private final JavaEnum.Synchronizable<JSLState> state = new JavaEnum.Synchronizable<>(JSLState.STOP);
 
 
@@ -106,7 +106,7 @@ public abstract class AbsJSL implements JSL {
         this.objs = objs;
         this.comm = comm;
 
-        log.info(Mrk_JSL.JSL_MAIN, String.format("Initialized AbsJSL/%s instance for '%s' ('%s') service", this.getClass().getSimpleName(), srvInfo.getSrvName(), srvInfo.getFullId()));
+        log.info(String.format("Initialized AbsJSL/%s instance for '%s' ('%s') service", this.getClass().getSimpleName(), srvInfo.getSrvName(), srvInfo.getFullId()));
     }
 
 
@@ -125,8 +125,8 @@ public abstract class AbsJSL implements JSL {
      */
     @Override
     public void startup() throws StateException {
-        log.info(Mrk_JSL.JSL_MAIN, String.format("Start JSL instance for '%s' service", srvInfo.getSrvId()));
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.info(String.format("Start JSL instance for '%s' service", srvInfo.getSrvId()));
+        log.trace(String.format("JSL state is %s", getState()));
 
         if (state.enumEquals(JSLState.RUN))
             return; // Already done
@@ -144,7 +144,7 @@ public abstract class AbsJSL implements JSL {
             throw new StateException("Can't startup JSL library instance because is shuting down, try again later");
         }
 
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.trace(String.format("JSL state is %s", getState()));
     }
 
     /**
@@ -152,8 +152,8 @@ public abstract class AbsJSL implements JSL {
      */
     @Override
     public void shutdown() throws StateException {
-        log.info(Mrk_JSL.JSL_MAIN, String.format("Shuting down JSL instance for '%s' service", srvInfo.getSrvId()));
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.info(String.format("Shuting down JSL instance for '%s' service", srvInfo.getSrvId()));
+        log.trace(String.format("JSL state is %s", getState()));
 
         if (state.enumEquals(JSLState.RUN))
             shutdownInstance();
@@ -170,7 +170,7 @@ public abstract class AbsJSL implements JSL {
         else if (state.enumEquals(JSLState.SHOUTING))
             return; // Already in progress
 
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.trace(String.format("JSL state is %s", getState()));
     }
 
     /**
@@ -178,8 +178,8 @@ public abstract class AbsJSL implements JSL {
      */
     @Override
     public boolean restart() throws StateException {
-        log.info(Mrk_JSL.JSL_MAIN, String.format("Shuting down JSL instance for '%s' service", srvInfo.getSrvId()));
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.info(String.format("Shuting down JSL instance for '%s' service", srvInfo.getSrvId()));
+        log.trace(String.format("JSL state is %s", getState()));
 
         if (state.enumEquals(JSLState.RUN))
             restartInstance();
@@ -196,63 +196,57 @@ public abstract class AbsJSL implements JSL {
         else if (state.enumEquals(JSLState.SHOUTING))
             throw new StateException("Can't restart JSL library instance because is shuting down, try again later");
 
-        log.trace(Mrk_JSL.JSL_MAIN, String.format("JSL state is %s", getState()));
+        log.trace(String.format("JSL state is %s", getState()));
         return state.enumEquals(JSLState.STARTING);
     }
 
     @Override
     public void printInstanceInfo() {
-        log.info(Mrk_JSL.JSL_MAIN, "JSL Srv");
-        log.info(Mrk_JSL.JSL_MAIN, " -- IDs");
-        log.info(Mrk_JSL.JSL_MAIN, "        JSL Srv");
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            ID                = %s", srvInfo.getSrvId()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            name              = %s", srvInfo.getSrvName()));
-        log.info(Mrk_JSL.JSL_MAIN, "        User");
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            ID                = %s", srvInfo.getUserId()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            name              = %s", srvInfo.getUsername()));
-        log.info(Mrk_JSL.JSL_MAIN, " -- Ver.s");
-        log.info(Mrk_JSL.JSL_MAIN, String.format("    JSL Srv state             = %s", getState()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("    JSL Srv version           = %s", version()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("    JOSP JOD supported        = %s", Arrays.asList(versionsJOSPObject())));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("    JOSP protocol supported   = %s", Arrays.asList(versionsJOSPProtocol())));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("    JCP APIs supported        = %s", Arrays.asList(versionsJCPAPIs())));
-        log.info(Mrk_JSL.JSL_MAIN, " -- Comm.s");
-        log.info(Mrk_JSL.JSL_MAIN, "        JCP APIs");
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            State             = %s", comm.getCloudAPIs().getState()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            Url               = %s", comm.getCloudAPIs().getAPIsUrl()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            HostName          = %s", comm.getCloudAPIs().getAPIsHostname()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            IsConnected       = %s", comm.getCloudAPIs().isConnected()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            IsAuth            = %s", comm.getCloudAPIs().isUserAuthenticated()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            LastConn          = %s", comm.getCloudAPIs().getLastConnection()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            LastDiscon        = %s", comm.getCloudAPIs().getLastDisconnection()));
-        log.info(Mrk_JOD.JOD_MAIN, "        Cloud Comm.");
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            State (Client)    = %s", comm.getCloudConnection().getState()));
+        log.debug("                                     JSL Srv");
+        log.debug("                                     + -- IDs");
+        log.debug("                                     +        JSL Srv");
+        log.debug(String.format("                                     +            ID                = %s", srvInfo.getSrvId()));
+        log.debug(String.format("                                     +            name              = %s", srvInfo.getSrvName()));
+        log.debug("                                     +        User");
+        log.debug(String.format("                                     +            ID                = %s", srvInfo.getUserId()));
+        log.debug(String.format("                                     +            name              = %s", srvInfo.getUsername()));
+        log.debug("                                     + -- Ver.s");
+        log.debug(String.format("                                     +    JSL Srv state             = %s", getState()));
+        log.debug(String.format("                                     +    JSL Srv version           = %s", version()));
+        log.debug(String.format("                                     +    JOSP JOD supported        = %s", Arrays.asList(versionsJOSPObject())));
+        log.debug(String.format("                                     +    JOSP protocol supported   = %s", Arrays.asList(versionsJOSPProtocol())));
+        log.debug(String.format("                                     +    JCP APIs supported        = %s", Arrays.asList(versionsJCPAPIs())));
+        log.debug("                                     + -- Comm.s");
+        log.debug("                                     +        JCP APIs");
+        log.debug(String.format("                                     +            State             = %s", comm.getCloudAPIs().getState()));
+        log.debug(String.format("                                     +            Url               = %s", comm.getCloudAPIs().getAPIsUrl()));
+        log.debug(String.format("                                     +            HostName          = %s", comm.getCloudAPIs().getAPIsHostname()));
+        log.debug(String.format("                                     +            IsConnected       = %s", comm.getCloudAPIs().isConnected()));
+        log.debug(String.format("                                     +            IsAuth            = %s", comm.getCloudAPIs().isUserAuthenticated()));
+        log.debug(String.format("                                     +            LastConn          = %s", comm.getCloudAPIs().getLastConnection()));
+        log.debug(String.format("                                     +            LastDiscon        = %s", comm.getCloudAPIs().getLastDisconnection()));
+        log.debug("                                     +        Cloud Comm.");
+        log.debug(String.format("                                     +            State (Client)    = %s", comm.getCloudConnection().getState()));
         InetAddress cloudAddr = comm.getCloudConnection().getConnectionInfo().getRemoteInfo().getAddr();
         Integer cloudPort = comm.getCloudConnection().getConnectionInfo().getRemoteInfo().getPort();
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            HostName          = %s", (cloudAddr != null ? cloudAddr.getHostName() : "N/A")));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            IPAddr            = %s", (cloudAddr != null ? cloudAddr.getHostAddress() : "N/A")));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            Port            = %s", (cloudPort != null ? cloudPort : "N/A")));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            IsConnected       = %s", comm.getCloudConnection().getState().isConnected()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            LastConn          = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastConnection()));
-        log.info(Mrk_JOD.JOD_MAIN, String.format("            LastDiscon        = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastDisconnection()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            LastDisconReason  = %s", comm.getCloudConnection().getDisconnectionReason()));
-        log.info(Mrk_JOD.JOD_MAIN, "        Local Comm.");
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            State (ClientMngr)= %s", comm.getLocalConnections().getState()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            IsRunning         = %s", comm.getLocalConnections().isRunning()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            ClientsCount      = %d", comm.getLocalConnections().getLocalClients().size()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            ClientsConn       = %d", comm.getLocalConnections().getConnectedCount()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            ClientsDisconn    = %d", comm.getLocalConnections().getDisconnectedCount()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            LastStart         = %s", comm.getLocalConnections().getLastStartup()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            LastStop          = %s", comm.getLocalConnections().getLastShutdown()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            LastConn          = %s", comm.getLocalConnections().getLastObjConnection()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("            LastDisconn       = %s", comm.getLocalConnections().getLastObjDisconnection()));
+        log.debug(String.format("                                     +            HostName          = %s", (cloudAddr != null ? cloudAddr.getHostName() : "N/A")));
+        log.debug(String.format("                                     +            IPAddr            = %s", (cloudAddr != null ? cloudAddr.getHostAddress() : "N/A")));
+        log.debug(String.format("                                     +            Port            = %s", (cloudPort != null ? cloudPort : "N/A")));
+        log.debug(String.format("                                     +            IsConnected       = %s", comm.getCloudConnection().getState().isConnected()));
+        log.debug(String.format("                                     +            LastConn          = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastConnection()));
+        log.debug(String.format("                                     +            LastDiscon        = %s", comm.getCloudConnection().getConnectionInfo().getStats().getLastDisconnection()));
+        log.debug(String.format("                                     +            LastDisconReason  = %s", comm.getCloudConnection().getDisconnectionReason()));
+        log.debug("                                     +        Local Comm.");
+        log.debug(String.format("                                     +            State (ClientMngr)= %s", comm.getLocalConnections().getState()));
+        log.debug(String.format("                                     +            IsRunning         = %s", comm.getLocalConnections().isRunning()));
+        log.debug(String.format("                                     +            ClientsCount      = %d", comm.getLocalConnections().getLocalClients().size()));
         List<JSLRemoteObject> objsList = objs.getAllObjects();
         StringBuilder objNames = new StringBuilder();
         for (JSLRemoteObject ro : objsList)
             objNames.append(ro.getName()).append(", ");
-        log.info(Mrk_JSL.JSL_MAIN, " -- Objs Mngr");
-        log.info(Mrk_JSL.JSL_MAIN, String.format("        Count                 = %s", objsList.size()));
-        log.info(Mrk_JSL.JSL_MAIN, String.format("        List                  = %s", objNames));
+        log.debug("                                     + -- Objs Mngr");
+        log.debug(String.format("                                     +        Count                 = %s", objsList.size()));
+        log.debug(String.format("                                     +        List                  = %s", objNames));
     }
 
     private void startupInstance() {
@@ -261,33 +255,42 @@ public abstract class AbsJSL implements JSL {
                 "Method startupInstance() can be called only from STOP or RESTARTING state";
 
         synchronized (state) {
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.STARTING);
+                emitJSLStateChange(state.get(), oldState);
+            }
 
             try {
                 boolean startLocal = ((JSLSettings_002) settings).getLocalEnabled();
-                log.info(Mrk_JSL.JSL_MAIN, String.format("JSLCommunication local communication %s", startLocal ? "enabled" : "disabled"));
+                log.info(String.format("JSLCommunication local communication %s", startLocal ? "enabled" : "disabled"));
                 if (startLocal) comm.getLocalConnections().start();
 
             } catch (StateException | Discover.DiscoveryException e) {
-                log.warn(Mrk_JSL.JSL_MAIN, String.format("Error on starting local communication of '%s' service because %s", srvInfo.getSrvId(), e.getMessage()), e);
+                log.warn(String.format("Error on starting local communication of '%s' service because %s", srvInfo.getSrvId(), e.getMessage()), e);
             }
 
             try {
                 boolean startCloud = ((JSLSettings_002) settings).getCloudEnabled();
-                log.info(Mrk_JSL.JSL_MAIN, String.format("JCP GWs client %s", startCloud ? "enabled" : "disabled"));
+                log.info(String.format("JCP GWs client %s by settings", startCloud ? "enabled" : "disabled"));
                 if (startCloud)
                     comm.getCloudConnection().connect();
 
             } catch (PeerConnectionException e) {
-                log.warn(Mrk_JSL.JSL_MAIN, "JCP GWs client not connected, retry later", e);
+                if (!comm.getCloudAPIs().isConnected())
+                    log.warn("Can't connect GWs client because JCP API not available, retry when JCP API become reachable");
+                else
+                    log.warn("JCP GWs client not connected, retry later", e);
             }
 
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.RUN);
+                emitJSLStateChange(state.get(), oldState);
+            }
         }
 
-        log.info(Mrk_JSL.JSL_MAIN, String.format("JSL Service '%s' started", srvInfo.getSrvId()));
+        log.info(String.format("JSL Service '%s' started", srvInfo.getSrvId()));
 
         printInstanceInfo();
     }
@@ -298,29 +301,35 @@ public abstract class AbsJSL implements JSL {
                 "Method shutdownInstance() can be called only from RUN or RESTARTING state";
 
         synchronized (state) {
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.SHOUTING);
+                emitJSLStateChange(state.get(), oldState);
+            }
 
-            log.trace(Mrk_JSL.JSL_MAIN, "JSLCommunication stop discovery and disconnect from JCP");
+            log.trace("JSLCommunication stop discovery and disconnect from JCP");
             try {
                 comm.getLocalConnections().stop();
 
             } catch (StateException | Discover.DiscoveryException e) {
-                log.warn(Mrk_JSL.JSL_MAIN, String.format("Error on stopping local communication service '%s''s objects discovery because %s", srvInfo.getSrvId(), e.getMessage()), e);
+                log.warn(String.format("Error on stopping local communication service '%s''s objects discovery because %s", srvInfo.getSrvId(), e.getMessage()), e);
             }
 
             try {
                 comm.getCloudConnection().disconnect();
 
             } catch (PeerDisconnectionException e) {
-                log.warn(Mrk_JSL.JSL_MAIN, String.format("Error on disconnecting cloud communication of '%s' service because %s", srvInfo.getSrvId(), e.getMessage()), e);
+                log.warn(String.format("Error on disconnecting cloud communication of '%s' service because %s", srvInfo.getSrvId(), e.getMessage()), e);
             }
 
-            if (state.enumNotEquals(JSLState.RESTARTING))
+            if (state.enumNotEquals(JSLState.RESTARTING)) {
+                JSLState oldState = state.get();
                 state.set(JSLState.STOP);
+                emitJSLStateChange(state.get(), oldState);
+            }
         }
 
-        log.info(Mrk_JSL.JSL_MAIN, String.format("JSL Service '%s' stopped", srvInfo.getSrvId()));
+        log.info(String.format("JSL Service '%s' stopped", srvInfo.getSrvId()));
     }
 
     private void restartInstance() {
@@ -329,19 +338,23 @@ public abstract class AbsJSL implements JSL {
                 "Method shutdownInstance() can be called only from RUN or STOP state";
 
         synchronized (state) {
+            JSLState oldState = state.get();
             state.set(JSLState.RESTARTING);
+            emitJSLStateChange(state.get(), oldState);
 
-            log.trace(Mrk_JSL.JSL_MAIN, "JSL shout down for restarting");
+            log.trace("JSL shout down for restarting");
             if (state.enumEquals(JSLState.RUN))
                 shutdownInstance();
 
-            log.trace(Mrk_JSL.JSL_MAIN, "JSL startup for restarting");
+            log.trace("JSL startup for restarting");
             startupInstance();
 
+            oldState = state.get();
             state.set(JSLState.RUN);
+            emitJSLStateChange(state.get(), oldState);
         }
 
-        log.info(Mrk_JSL.JSL_MAIN, String.format("JSL Service '%s' restarted", srvInfo.getSrvId()));
+        log.info(String.format("JSL Service '%s' restarted", srvInfo.getSrvId()));
     }
 
 
@@ -393,6 +406,36 @@ public abstract class AbsJSL implements JSL {
     @Override
     public JSLCommunication getCommunication() {
         return comm;
+    }
+
+
+    // Listeners
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addListener(JSLStateListener listener) {
+        if (stateListeners.contains(listener))
+            return;
+
+        stateListeners.add(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeListener(JSLStateListener listener) {
+        if (!stateListeners.contains(listener))
+            return;
+
+        stateListeners.remove(listener);
+    }
+
+    protected void emitJSLStateChange(JSLState newState, JSLState oldState) {
+        for (JSLStateListener l : stateListeners)
+            l.onJSLStateChanged(newState, oldState);
     }
 
 }

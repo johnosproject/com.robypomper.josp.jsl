@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ public interface JSLObjsMngr {
     // Object's access
 
     /**
-     * @return an array containing all known objects.
+     * @return a List containing all known objects.
      */
     List<JSLRemoteObject> getAllObjects();
 
     /**
-     * @return an array containing all connected objects.
+     * @return a List containing all connected objects.
      */
     List<JSLRemoteObject> getAllConnectedObjects();
 
@@ -64,46 +64,35 @@ public interface JSLObjsMngr {
     JSLRemoteObject getById(String objId);
 
     /**
-     * @param client required object's local connection.
+     * @param model required object's model.
      * @return the object associated to given local connection, null if not found.
      */
-    JSLRemoteObject getByConnection(JSLLocalClient client);
+    List<JSLRemoteObject> getByModel(String model);
 
     /**
      * @param pattern object's search pattern.
-     * @return an array containing all object's corresponding to given search
+     * @return a List containing all object's corresponding to given search
      * pattern.
      */
     List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern);
 
 
+    // Objects mngm
+
+    /**
+     * Create a new {@link JSLRemoteObject} instance.
+     * <p>
+     * This method is call by {@link JSLCommunication} system when it receives a
+     * new connection to an unknown JOD Object.
+     *
+     * @param objectConnection the open local connection to JOD object.
+     * @param remoteObjId      the object's id that the local connection is connected
+     * @return created object.
+     */
+    JSLRemoteObject createNewRemoteObject(JSLLocalClient objectConnection, String remoteObjId);
+
+
     // Connections mngm
-
-    /**
-     * Associate given connection to corresponding {@link JSLRemoteObject}.
-     * <p>
-     * This method is call by {@link JSLCommunication} system when it opens a
-     * local connection with a JOD Object.
-     * <p>
-     * If there is no {@link JSLRemoteObject} yet, it will be created.
-     *
-     * @param serverConnection the open local connection to JOD object.
-     * @return created or connected object.
-     */
-    JSLRemoteObject addNewConnection(JSLLocalClient serverConnection);
-
-    /**
-     * Remove given connection to corresponding {@link JSLRemoteObject}.
-     * <p>
-     * This method is call by {@link JSLCommunication} system when it close (or
-     * detect that is closed) a local connection with a JOD Object.
-     * <p>
-     * If there is no {@link JSLRemoteObject} yet, it will be created anyway and
-     * set offline.
-     *
-     * @param localConnection the closed local connection to JOD object.
-     */
-    boolean removeConnection(JSLLocalClient localConnection);
 
     void setCommunication(JSLCommunication communication);
 

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ package com.robypomper.josp.jsl.objs.structure;
 
 
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 
 /**
@@ -35,8 +34,8 @@ public interface JSLAction extends JSLState {
     // Action cmd flow (struct)
 
     static void execAction(JSLActionParams params, JSLAction comp, Logger log) throws JSLRemoteObject.MissingPermission, JSLRemoteObject.ObjectNotConnected {
-        log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("Sending component '%s' state to object '%s'", comp.getName(), comp.getRemoteObject().getId()));
+        log.debug(String.format("Sending component '%s' state to object '%s'", comp.getName(), comp.getRemoteObject().getId()));
         comp.getRemoteObject().sendObjectCmdMsg(comp, params);
-        log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("Component '%s' send state to object '%s'", comp.getName(), comp.getRemoteObject().getId()));
+        log.debug(String.format("Component '%s' send state to object '%s'", comp.getName(), comp.getRemoteObject().getId()));
     }
 }

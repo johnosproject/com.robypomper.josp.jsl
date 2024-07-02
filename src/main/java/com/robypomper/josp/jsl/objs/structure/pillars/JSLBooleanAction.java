@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ package com.robypomper.josp.jsl.objs.structure.pillars;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.objs.structure.JSLAction;
 import com.robypomper.josp.jsl.objs.structure.JSLActionParams;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JSLBooleanAction extends JSLBooleanState implements JSLAction {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(JSLBooleanAction.class);
 
 
     // Constructor
@@ -87,8 +87,8 @@ public class JSLBooleanAction extends JSLBooleanState implements JSLAction {
         @Override
         public String encode() {
             // No '\n', no ';'
-            String newVal = String.format(KEY_VALUE_FORMAT, "new", Boolean.toString(newState));
-            String oldVal = String.format(KEY_VALUE_FORMAT, "old", Boolean.toString(oldState));
+            String newVal = String.format(KEY_VALUE_FORMAT, "new", newState);
+            String oldVal = String.format(KEY_VALUE_FORMAT, "old", oldState);
             return newVal + ITEMS_SEP + oldVal;
         }
 

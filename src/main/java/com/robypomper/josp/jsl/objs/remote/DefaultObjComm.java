@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@
 
 package com.robypomper.josp.jsl.objs.remote;
 
-import com.robypomper.comm.exception.PeerDisconnectionException;
-import com.robypomper.java.JavaThreads;
 import com.robypomper.josp.jsl.comm.JSLCommunication;
 import com.robypomper.josp.jsl.comm.JSLGwS2OClient;
 import com.robypomper.josp.jsl.comm.JSLLocalClient;
+import com.robypomper.josp.jsl.comm.JSLLocalClientsMngr;
 import com.robypomper.josp.jsl.objs.JSLRemoteObject;
 import com.robypomper.josp.jsl.srvinfo.JSLServiceInfo;
 import com.robypomper.josp.protocol.JOSPPerm;
-import com.robypomper.log.Mrk_JSL;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +35,9 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
 
     // Internal vars
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjComm.class);
     private final JSLCommunication communication;
     private boolean isCloudConnected = true;
-    private final List<JSLLocalClient> localConnections = new ArrayList<>();
     private final List<RemoteObjectConnListener> listenersConn = new ArrayList<>();
 
 
@@ -49,6 +46,7 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
     public DefaultObjComm(JSLRemoteObject remoteObject, JSLServiceInfo serviceInfo, JSLCommunication communication) {
         super(remoteObject, serviceInfo);
         this.communication = communication;
+        communication.getLocalConnections().addListener(localClientsListener);
     }
 
 
@@ -83,7 +81,8 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
      */
     @Override
     public boolean isLocalConnected() {
-        return getConnectedLocalClient() != null;
+        JSLLocalClient client = getActiveLocalClient();
+        return client != null && client.getState().isConnected();
     }
 
 
@@ -102,104 +101,23 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
     }
 
     /**
-     * Add given client as communication channel between this JSL object representation
-     * and corresponding JOD object.
-     * <p>
-     * This method checks if it's the first client set for current object
-     * representation then send object's presentation requests (objectInfo and
-     * objectStructure).
-     * <p>
-     * If there is already a connected client, then this method disconnect given
-     * one. Ther must be at least one connected client, others are used as
-     * backups.
-     *
-     * @param newClient the client connected with corresponding JOD object.
+     * @return the active local connection to the object.
+     * if the object is disconnected or works only via cloud, then the
+     * returned value will be null.
      */
-    public void addLocalClient(JSLLocalClient newClient) {
-        log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("Add new client '%s' to object '%s'", newClient.getRemoteId(), getRemote().getName()));
-
-        boolean wasConnected = isLocalConnected();
-        JSLLocalClient oldClient = null;
-        for (JSLLocalClient cl : localConnections) {
-            if (
-                // Check remote address and port
-                    cl.getConnectionInfo().getRemoteInfo().getAddr() == newClient.getConnectionInfo().getRemoteInfo().getAddr()
-                            && cl.getConnectionInfo().getRemoteInfo().getPort().intValue() == newClient.getConnectionInfo().getRemoteInfo().getPort().intValue()
-                            // Check local address
-                            && cl.getConnectionInfo().getLocalInfo().getAddr() == newClient.getConnectionInfo().getLocalInfo().getAddr()
-            ) {
-                oldClient = cl;
-                break;
-            }
-        }
-
-        try {
-            newClient.setRemoteObject(getRemote());
-        } catch (IllegalArgumentException ignore) {
-        }
-
-        // If object already connected
-        //   Disconnect new client
-        //   If client NOT already know
-        //     Add new client to object's clients
-        if (wasConnected) {
-            JavaThreads.softSleep(100);         // Force switch thread, to allow starting client's thread
-            try {
-                newClient.disconnect();
-            } catch (PeerDisconnectionException ignore) {
-            }
-
-            if (oldClient == null) {
-                localConnections.add(newClient);
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s' as backup client", newClient, getRemote().getName()));
-            } else
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' NOT added to object '%s' because client already know (%s)", newClient, getRemote().getName(), oldClient));
-
-        }
-
-        // If object NOT connected
-        //   Add new client to object's clients
-        //   If client already know
-        //     Remove old Client from object's clients
-        if (!wasConnected) {
-            localConnections.add(newClient);
-            if (oldClient != null) {
-                localConnections.remove(oldClient);
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s' and replace old client (%s)", newClient, getRemote().getName(), oldClient));
-            } else
-                log.debug(Mrk_JSL.JSL_OBJS_SUB, String.format("New client '%s' added to object '%s'", newClient, getRemote().getName()));
-        }
-
-        if (!wasConnected && isLocalConnected())
-            emitConn_LocalConnected(newClient);
+    @Override
+    public JSLLocalClient getActiveLocalClient() {
+        return communication.getLocalConnections().getActiveLocalClientByObject(getRemote());
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public void removeLocalClient(JSLLocalClient localClient) {
-        localConnections.remove(localClient);
-        emitConn_LocalDisconnected(localClient);
-    }
-
-    /**
-     * @return an array containing all available local connections to the object.
+     * @return a list containing all available local connections to the object.
      * if the object is disconnected or works only via cloud, then the
      * returned array will be empty.
      */
-    public List<JSLLocalClient> getLocalClients() {
-        return localConnections;
-    }
-
-    /**
-     * @return the client connected (if any) to the corresponding JOD object.
-     */
-    public JSLLocalClient getConnectedLocalClient() {
-        for (JSLLocalClient client : localConnections) {
-            if (client.getState().isConnected())
-                return client;
-        }
-        return null;
+    @Override
+    public List<JSLLocalClient> getLocalBackupClients() {
+        return communication.getLocalConnections().getLocalBackupClientsByObject(getRemote());
     }
 
     public JSLGwS2OClient getCloudConnection() {
@@ -216,6 +134,26 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
         }
         return true;
     }
+
+
+    // JSLLocalClientsMngr listener
+
+    private final JSLLocalClientsMngr.LocalClientListener localClientsListener = new JSLLocalClientsMngr.LocalClientListener() {
+        @Override
+        public void onLocalConnected(JSLRemoteObject jslObj, JSLLocalClient jslLocCli) {
+            if (jslObj == getRemote())
+                emitConn_LocalConnected(jslLocCli);
+        }
+
+        @Override
+        public void onLocalConnectionError(JSLLocalClient jslLocCli, Throwable throwable) {}
+
+        @Override
+        public void onLocalDisconnected(JSLRemoteObject jslObj, JSLLocalClient jslLocCli) {
+            if (jslObj == getRemote())
+                emitConn_LocalDisconnected(jslLocCli);
+        }
+    };
 
 
     // Listeners
