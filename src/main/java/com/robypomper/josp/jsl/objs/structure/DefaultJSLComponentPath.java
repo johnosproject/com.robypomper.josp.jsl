@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class DefaultJSLComponentPath implements JSLComponentPath {
      * @param child the children name.
      */
     public DefaultJSLComponentPath(JSLComponentPath path, String child) {
-        // ToDo: check behaviour with not Unique path (focus on ...>* paths)
+        // ToDo: Check DefaultJSLComponentPath constructor behaviour with not Unique path (focus on ...>* paths)
         this((path.getString().compareTo(StructureDefinitions.PATH_STR_ROOT) == 0 ? "" : path.getString() + StructureDefinitions.PATH_SEP) + child);
     }
 

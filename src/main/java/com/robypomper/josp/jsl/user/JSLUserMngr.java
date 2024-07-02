@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,13 +74,13 @@ public interface JSLUserMngr {
 
     // User's settings
 
-    // ToDo: implements user's specific settings (local/cloud)
+    // ToDo: Implements user's specific settings (local/cloud)
     // String getUserSetting(String key);
 
 
     // User/Service settings
 
-    // ToDo: implements user's related to current service settings (local/cloud)
+    // ToDo: Implements user's related to current service settings (local/cloud)
     // String getUserSrvSetting(String key);
 
 

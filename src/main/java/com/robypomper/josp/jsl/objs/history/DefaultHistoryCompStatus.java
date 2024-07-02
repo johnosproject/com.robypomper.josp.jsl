@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,8 +114,6 @@ public class DefaultHistoryCompStatus extends HistoryBase implements HistoryComp
 
     public boolean processHistoryCompStatusMsg(String msg) {
         // Received StatusHistory message
-        System.out.println(String.format("Received StatusHistory Message for %s component on %s object", getComponent().getName(), getRemote().getName()));
-
         String objId;
         String fullSrvId;
         String compPathStr;

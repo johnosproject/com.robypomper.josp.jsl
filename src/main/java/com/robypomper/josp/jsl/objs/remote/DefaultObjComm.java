@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class DefaultObjComm extends ObjBase implements ObjComm {
     }
 
     /**
-     * @return an array containing all available local connections to the object.
+     * @return a list containing all available local connections to the object.
      * if the object is disconnected or works only via cloud, then the
      * returned array will be empty.
      */

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ public interface JSLObjsMngr {
     // Object's access
 
     /**
-     * @return an array containing all known objects.
+     * @return a List containing all known objects.
      */
     List<JSLRemoteObject> getAllObjects();
 
     /**
-     * @return an array containing all connected objects.
+     * @return a List containing all connected objects.
      */
     List<JSLRemoteObject> getAllConnectedObjects();
 
@@ -71,7 +71,7 @@ public interface JSLObjsMngr {
 
     /**
      * @param pattern object's search pattern.
-     * @return an array containing all object's corresponding to given search
+     * @return a List containing all object's corresponding to given search
      * pattern.
      */
     List<JSLRemoteObject> searchObjects(JSLObjectSearchPattern pattern);

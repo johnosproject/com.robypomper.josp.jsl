@@ -1,7 +1,7 @@
 /*******************************************************************************
  * The John Service Library is the software library to connect "software"
  * to an IoT EcoSystem, like the John Operating System Platform one.
- * Copyright (C) 2021 Roberto Pompermaier
+ * Copyright (C) 2024 Roberto Pompermaier
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ import java.util.concurrent.CountDownLatch;
  * Discovered JOD Object's services and available clients can be retrieved using
  * the {@link #getDiscoveredServices()} and {@link #getLocalClients()} methods.
  * <p>
- * TODO: move backup connections from DefaultObjComm to here
+ * TODO: move backup connections from DefaultObjComm to JSLLocalClientsMngr
  */
 @SuppressWarnings("UnnecessaryReturnStatement")
 public class JSLLocalClientsMngr {
@@ -376,14 +376,6 @@ public class JSLLocalClientsMngr {
                     log.warn(String.format("Error on disconnecting from '%s' object on server '%s:%d' from '%s' service because %s", client.getRemoteId(), client.getConnectionInfo().getLocalInfo().getAddr().getHostAddress(), client.getConnectionInfo().getLocalInfo().getPort(), srvInfo.getSrvId(), e.getMessage()), e);
                 }
         log.debug("Local communication service's clients disconnected");
-
-        // todo clean the code
-//        availableDiscoveryServices.clear();
-//        discoveryServicesLatches.clear();
-//        connectionsDiscoveryServices.clear();
-//        availableConnections.clear();
-//        connectionsObjectIDs.clear();
-//        connectionsRemoteObjects.clear();
     }
 
     private void startDiscovering() throws Discover.DiscoveryException {
@@ -438,7 +430,7 @@ public class JSLLocalClientsMngr {
      * @return true if message was processed successfully, false otherwise.
      */
     public boolean processFromObjectMsg(JSLLocalClient client, String msg, JOSPPerm.Connection connType) {
-        log.warn(String.format("Received message from object %s: %s", connectionsObjectIDs.get(client), msg));
+        log.trace(String.format("Received message from object %s: %s", connectionsObjectIDs.get(client), msg));
         return jslComm.processFromObjectMsg(msg, connType);
     }
 
@@ -627,8 +619,8 @@ public class JSLLocalClientsMngr {
             log.debug(String.format("%s Connecting to discovered JOD Object's service '%s' using ENCRYPTED connection", discoveryLUID(discSrv), discSrv.name));
 
             JSLLocalClient localClient = new JSLLocalClientSSLShare(this, srvInfo.getFullId(),
-                        discSrv.address, discSrv.port,  // ToDo: Give also discSrv.intf, so client can bind right interface
-                        discSrv.name,                   // ToDo: this should be the remoteObjId
+                        discSrv.address, discSrv.port,  // ToDo: JSLLocalClientsMngr must give also discSrv.intf to the JSLLocalClientSSLShare constructor, so client can bind right interface
+                        discSrv.name,                   // ToDo: Replace discSrv.name with remoteObjId into JSLLocalClientsMngr::processDiscovered()
                         localClientListener,
                         sslSharingEnabled,
                         sslCtx, clientCertificate, trustManager);
@@ -832,7 +824,7 @@ public class JSLLocalClientsMngr {
             return;
         }
 
-        // TODO fix missing backup clients
+        // TODO Fix missing backup clients in JSLLocalClientsMngr::processOnDisconnected()
         // If remote object is NOT locally connected, look for a backup client and connect it
         assert !remObj.getComm().isLocalConnected() : "Remote object must be disconnected locally";
         if (isRunning())
@@ -877,7 +869,7 @@ public class JSLLocalClientsMngr {
         connectionsRemoteObjects.remove(client);
         String rObjID = connectionsObjectIDs.remove(client);
 
-        // TODO: analyze the error and print adeguate logging message
+        // TODO: Analyze the error and print adeguate logging message in JSLLocalClientsMngr::processOnFail()
         log.warn(String.format("%s Error on '%s' connection: [%s]", LUID(client), client, rObjID));
 
         emit_LocalConnectionError(client, e);
